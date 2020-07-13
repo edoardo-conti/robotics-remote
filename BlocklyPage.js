@@ -18,6 +18,7 @@ function LoadingIndicatorView() {
 
 // da popolare
 let authcode = -1;
+let webref = null;
 
 class BlocklyPage extends Component {
   constructor(props) {
@@ -39,14 +40,36 @@ class BlocklyPage extends Component {
       .then(function (response) {
         // 
       })
-      .catch(function(error) {
+      .catch(function(e) {
         // 
+        alert('errore: ' + e);
       });
     } else if(message.id == 1) {
       // get code
       var code = message.code;
 
-      alert(code);
+      // alert(code);
+    } else if(message.id == 2) {
+      // getDistance()
+
+      var httpreq = '/sensors/' + message.sensor + '?auth=' + authcode;
+      
+      instance.get(httpreq)
+      .then(function (response) {
+        //alert(response);
+
+       if(response.data.status == "OK") {
+        const run = 'window.sensorValue = '+ response.data.data +';true;';
+
+        webref.injectJavaScript(run);
+       }
+        
+      })
+      .catch(function(e) {
+        // 
+        alert("errore: " + e);
+      });
+      
     }
 
   }
@@ -54,6 +77,7 @@ class BlocklyPage extends Component {
   render() {
     return (
       <WebView
+        ref={(r) => (webref = r)}
         style={{flex: 1}}
         source={{uri : 'https://edoardoconti.imfast.io/www/index.html'}}
         originWhitelist={['https://*']}

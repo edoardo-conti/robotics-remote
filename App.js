@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Button, View, SafeAreaView, Text, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
+import {  StyleSheet, 
+          Button, 
+          View, 
+          SafeAreaView, 
+          Text, 
+          ActivityIndicator, 
+          TouchableWithoutFeedback, 
+          ScrollView,
+          RefreshControl,
+        } from 'react-native';
 import Constants from 'expo-constants';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -14,6 +23,12 @@ const instance = axios.create({
   //timeout: 1000, 
 });
 
+const wait = (timeout) => {
+  return new Promise(resolve => {
+    setTimeout(resolve, timeout);
+  });
+}
+
 function HomeScreen({ navigation }) {
   // robot connection status 
   const [isRobotConnected, setRobotConnected] = useState(false);
@@ -26,6 +41,14 @@ function HomeScreen({ navigation }) {
   const [battery, setBattery] = useState([]);
   // button connection 
   const [isConnLoading, setConnLoading] = useState(false);
+  // refresh
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+
+    wait(2000).then(() => setRefreshing(false));
+  }, []);
 
   const readItemFromStorage = async () => {
     var jsonValue = await getItem();
@@ -177,7 +200,12 @@ function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       {isRobotConnected ? (
-      <View>
+      <ScrollView
+        contentContainerStyle={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {(robotOPmode == 0) ? (
         <View>
         <TouchableWithoutFeedback onPressIn={() => motorMove('forward',robotAuthCode)} onPressOut={() => motorMove('stop',robotAuthCode)}>
@@ -203,9 +231,9 @@ function HomeScreen({ navigation }) {
         {isBattLoading ? <ActivityIndicator/> : (
           <Text>Batteria: {battery.voltage/1000}V ({battery.level}%)</Text>
         )}
-        <Button title="Go to Blockly" onPress={gotoBlockly} />
+        <Button title="Programma Robot" onPress={gotoBlockly} />
         <Button title="Disconnetti Robot" onPress={disconnectRobot} />
-      </View>
+      </ScrollView>
       ) : 
       isConnLoading ? <ActivityIndicator/> : <Button onPress={connectRobot} title="Connetti Robot" />
       }
@@ -256,25 +284,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: Constants.statusBarHeight,
-    marginHorizontal: 16,
   },
-  title: {
-    textAlign: 'center',
-    marginVertical: 8,
-  },
-  fixToText: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  separator: {
-    marginVertical: 8,
-    borderBottomColor: '#737373',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  scrollView: {
+    flex: 1,
   },
   button: {
     alignItems: "center",
     backgroundColor: "#DDDDDD",
     padding: 10,
+    margin: 10,
     textAlign: 'center'
-  }
+  },
 });

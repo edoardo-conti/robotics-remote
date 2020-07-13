@@ -7,7 +7,7 @@ import {  StyleSheet,
           ActivityIndicator, 
           TouchableWithoutFeedback, 
           ScrollView,
-          RefreshControl,
+          RefreshControl
         } from 'react-native';
 import Constants from 'expo-constants';
 import { NavigationContainer } from '@react-navigation/native';
@@ -44,11 +44,18 @@ function HomeScreen({ navigation }) {
   // refresh
   const [refreshing, setRefreshing] = React.useState(false);
 
-  const onRefresh = React.useCallback(() => {
+  //const onRefresh = React.useCallback(() => {
+  function onRefresh() {
     setRefreshing(true);
 
-    wait(2000).then(() => setRefreshing(false));
-  }, []);
+    getRobotInfo(robotAuthCode)
+    .then(function (response) {
+      setRefreshing(false);
+    });
+
+    //wait(2000).then(() => setRefreshing(false));
+  }
+  //}, []);
 
   const readItemFromStorage = async () => {
     var jsonValue = await getItem();
@@ -146,7 +153,7 @@ function HomeScreen({ navigation }) {
   }
 
   function getRobotInfo(authcode) {
-    instance.get('/sensors/battery?auth=' + authcode)
+    return instance.get('/sensors/battery?auth=' + authcode)
     .then(function (response) {
       if(response.data.status == "OK") {
         
@@ -208,6 +215,7 @@ function HomeScreen({ navigation }) {
       >
         {(robotOPmode == 0) ? (
         <View>
+         
         <TouchableWithoutFeedback onPressIn={() => motorMove('forward',robotAuthCode)} onPressOut={() => motorMove('stop',robotAuthCode)}>
           <Text style={styles.button}>Avanti</Text>
         </TouchableWithoutFeedback>

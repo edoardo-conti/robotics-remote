@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   ScrollView,
   RefreshControl,
+  Image,
 } from "react-native";
 import Constants from "expo-constants";
 import { useAsyncStorage } from "@react-native-community/async-storage";
@@ -233,30 +234,48 @@ export function HomeScreen({ navigation }) {
           }
         >
           {robotOPmode == 0 ? (
-            <View>
+            <View style={styles.viewRobot}>
               <TouchableWithoutFeedback
                 onPressIn={() => motorMove("forward")}
                 onPressOut={() => motorMove("stop")}
               >
-                <Text style={styles.button}>Avanti</Text>
+                <Image 
+                source={require('./assets/arrow_2.png')} 
+                style={styles.arrowUp}
+                />
               </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback
-                onPressIn={() => motorMove("left")}
-                onPressOut={() => motorMove("stop")}
-              >
-                <Text style={styles.button}>Sinistra</Text>
-              </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback
-                onPressIn={() => motorMove("right")}
-                onPressOut={() => motorMove("stop")}
-              >
-                <Text style={styles.button}>Destra</Text>
-              </TouchableWithoutFeedback>
+              <View style={styles.viewRobotCenterRow}>
+                <TouchableWithoutFeedback
+                  onPressIn={() => motorMove("left")}
+                  onPressOut={() => motorMove("stop")}
+                >
+                  <Image 
+                  source={require('./assets/arrow_2.png')} 
+                  style={styles.arrowLeft}
+                  />
+                </TouchableWithoutFeedback>
+                <Image 
+                source={require('./assets/robot_sprite.png')} 
+                style={styles.robotSprite}
+                />
+                <TouchableWithoutFeedback
+                  onPressIn={() => motorMove("right")}
+                  onPressOut={() => motorMove("stop")}
+                >
+                  <Image 
+                  source={require('./assets/arrow_2.png')} 
+                  style={styles.arrowRight}
+                  />
+                </TouchableWithoutFeedback>
+              </View>
               <TouchableWithoutFeedback
                 onPressIn={() => motorMove("backward")}
                 onPressOut={() => motorMove("stop")}
               >
-                <Text style={styles.button}>Indietro</Text>
+                <Image 
+                source={require('./assets/arrow_2.png')} 
+                style={styles.arrowDown}
+                />
               </TouchableWithoutFeedback>
             </View>
           ) : (
@@ -278,7 +297,9 @@ export function HomeScreen({ navigation }) {
       ) : isConnLoading ? (
         <ActivityIndicator />
       ) : (
-        <Button onPress={connectRobot} title="Connetti Robot" />
+        <SafeAreaView style={styles.container}>
+          <Button onPress={connectRobot} title="Connetti Robot" />
+        </SafeAreaView>
       )}
     </SafeAreaView>
   );
@@ -303,11 +324,46 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  button: {
+  viewRobot: {
+    flex: 1,
+    flexDirection: "column",
     alignItems: "center",
-    backgroundColor: "#DDDDDD",
-    padding: 10,
-    margin: 10,
-    textAlign: "center",
+    justifyContent: "flex-start"
+  },
+  viewRobotCenterRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
+  robotSprite: {
+    flex: 1,
+    width: 500,
+    height: 500,
+    marginRight: 10,
+    resizeMode: "contain"
+  },
+  arrowUp: {
+    width: 50,
+    height: 50,
+    marginBottom: -150,
+  },
+  arrowRight: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+    transform: [{ rotate: '90deg' }]
+  },
+  arrowLeft: {
+    width: 50,
+    height: 50,
+    marginLeft: 10,
+    transform: [{ rotate: '-90deg' }]
+  },
+  arrowDown: {
+    width: 50,
+    height: 50,
+    marginTop: -150,
+    transform: [{ rotate: '180deg' }]
   },
 });

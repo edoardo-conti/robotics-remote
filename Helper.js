@@ -10,12 +10,15 @@ import {
   ScrollView,
   RefreshControl,
   Image,
+  Alert
 } from "react-native";
 import Constants from "expo-constants";
 import { useAsyncStorage } from "@react-native-community/async-storage";
+import { useFocusEffect } from '@react-navigation/native';
 
 import axios from "axios";
-import BlocklyPage, { getCode } from "./BlocklyPage";
+import BlocklyPage, { getCode, runCode } from "./BlocklyPage";
+import SwiperComponent from "./areaCoveragePage";
 
 const instance = axios.create({
   baseURL: "http://10.0.0.116/api",
@@ -57,7 +60,7 @@ export function HomeScreen({ navigation }) {
 
       setrobotAuthCode(jsonValueParsed.authcode);
       setRobotConnected(jsonValueParsed.connected);
-
+      
       // load sensors (todo)
       getRobotInfo(jsonValueParsed.authcode);
 
@@ -84,6 +87,7 @@ export function HomeScreen({ navigation }) {
 
     setrobotAuthCode(-1);
     setRobotConnected(false);
+    setrobotOPmode(0);
 
     // logging
     console.log("disconnessione...");
@@ -117,8 +121,18 @@ export function HomeScreen({ navigation }) {
         if (error.response != null) {
           alert(error.response.data.message);
         } else {
-          alert(
-            "Impossibile connettersi all'unità Robot, verificare l'ambiente di rete."
+          Alert.alert(
+            "Impossibile connettersi all'unità Robot",
+            "Verificare l'ambiente di rete",
+            [
+              {
+                text: "Chiudi",
+                onPress: () => console.log("Cancel Pressed"),
+                style: "cancel"
+              },
+              { text: "Riprova", onPress: () => connectRobot() }
+            ],
+            { cancelable: false }
           );
         }
       })
@@ -138,9 +152,6 @@ export function HomeScreen({ navigation }) {
           // alert(response.data.message);
 
           deleteItemFromStorage();
-          setrobotOPmode(0);
-          //setrobotAuthCode(-1);
-          //setRobotConnected(false);
         }
       })
       .catch(function (error) {
@@ -172,7 +183,7 @@ export function HomeScreen({ navigation }) {
     // controllo che la modalità non sia già stata impostata precedentemente
     if (robotOPmode != 1) {
       instance
-        .get("/setmode?op=1&auth=" + robotAuthCode)
+        .post("/setmode?op=1&auth=" + robotAuthCode)
         .then(function (response) {
           setrobotOPmode(1); //Blockly
         })
@@ -186,7 +197,7 @@ export function HomeScreen({ navigation }) {
     // controllo che la modalità non sia già stata impostata precedentemente
     if (robotOPmode != 0) {
       instance
-        .get("/setmode?op=0&auth=" + robotAuthCode)
+        .post("/setmode?op=0&auth=" + robotAuthCode)
         .then(function (response) {
           setrobotOPmode(0); //Blockly
         })
@@ -209,19 +220,32 @@ export function HomeScreen({ navigation }) {
     }
 
     instance
-      .post(urlReq)
-      .then(function (response) {
-        //
-      })
-      .catch(function (error) {
-        //
-      });
+    .post(urlReq)
+    .then(function (response) {
+      //
+    })
+    .catch(function (error) {
+      //
+    });
   }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // alert('Screen was focused');
+      // Do something when the screen is focused
+      return () => {
+        // alert('Screen was unfocused');
+        // Do something when the screen is unfocused
+        // Useful for cleanup functions
+      };
+    }, [])
+  );
 
   useEffect(() => {
     // recupero informazioni salvate localmente nel dispositivo
     // per tenere traccia della connessione tra client e unità robot
     readItemFromStorage();
+
   }, []);
 
   return (
@@ -292,6 +316,14 @@ export function HomeScreen({ navigation }) {
             </Text>
           )}
           <Button title="Programma Robot" onPress={gotoBlockly} />
+          <Button 
+          title="areaCoverage Scripts" 
+          onPress={() => { 
+            navigation.navigate("areaCoverageScreen",{
+              robotAuthCodeAlgs: robotAuthCode,
+            });
+          }} 
+          />
           <Button title="Disconnetti Robot" onPress={disconnectRobot} />
         </ScrollView>
       ) : isConnLoading ? (
@@ -312,8 +344,19 @@ export function BlocklyScreen({ route, navigation }) {
   return <BlocklyPage robotAuthCodeBlockly={robotAuthCodeBlockly} navigation={navigation} />;
 }
 
+export function areaCoverageScreen({ route, navigation }) {
+  /* Get the params */
+  const { robotAuthCodeAlgs } = route.params;
+
+  return <SwiperComponent robotAuthCodeAlgs={robotAuthCodeAlgs} />;
+}
+
 export function getCodeBlockly() {
   getCode();
+}
+
+export function runCodeBlockly() {
+  runCode();
 }
 
 const styles = StyleSheet.create({
@@ -346,7 +389,7 @@ const styles = StyleSheet.create({
   arrowUp: {
     width: 50,
     height: 50,
-    marginBottom: -150,
+    //marginBottom: -150,
   },
   arrowRight: {
     width: 50,

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Platform, ActivityIndicator } from "react-native";
+import { Platform, ActivityIndicator, Alert } from "react-native";
 import WebView from "react-native-webview";
 
 import axios from "axios";
@@ -43,6 +43,15 @@ class BlocklyPage extends Component {
 
       if(code != '') {
         navigation.navigate('MyModal', {code: code});
+      } else {
+        Alert.alert(
+          "Workspace vuoto",
+          "Aggiungere dei blocchi per generare codice",
+          [
+            { text: "OK" }
+          ],
+          { cancelable: false }
+        );
       }
 
     } else if (message.id == 2) {
@@ -93,6 +102,11 @@ function LoadingIndicatorView() {
 
 export function getCode() {
   const run = 'document.getElementById("getcode").click();true;';
+  
+  webref.injectJavaScript(run);
+}
+export function runCode() {
+  const run = 'document.getElementById("runcode").click();true;';
   
   webref.injectJavaScript(run);
 }

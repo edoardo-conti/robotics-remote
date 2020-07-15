@@ -4,8 +4,9 @@ import { Button, View, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import SyntaxHighlighter from 'react-native-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/styles/hljs';
 
-import { HomeScreen, BlocklyScreen, getCodeBlockly, runCodeBlockly } from "./Helper";
+import { HomeScreen, BlocklyScreen, areaCoverageScreen, getCodeBlockly, runCodeBlockly } from "./Helper";
 
 //const Stack = createStackNavigator();
 
@@ -33,6 +34,10 @@ function MainStackScreen() {
           ),
         }}
       />
+      <MainStack.Screen
+        name="areaCoverageScreen"
+        component={areaCoverageScreen}
+      />
     </MainStack.Navigator>
   );
 }
@@ -45,12 +50,13 @@ function ModalScreen({ route, navigation }) {
       <SyntaxHighlighter 
       language='javascript' 
       //fontSize={16}
-      //style={docco}
+      style={docco}
       //highlighter={"prism" || "hljs"}
       highlighter='hljs'
       >
       {code}
       </SyntaxHighlighter>
+      <Button onPress={runCodeBlockly} title="Esegui Codice" />
       <Button onPress={() => navigation.goBack()} title="Chiudi" />
     </View>
   );

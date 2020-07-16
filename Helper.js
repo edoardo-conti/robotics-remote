@@ -155,7 +155,9 @@ export function HomeScreen({ navigation }) {
         }
       })
       .catch(function (error) {
-        alert(error.response.data.message);
+        if(error.response != null) {
+          alert(error.response.data.message);
+        }
       });
   }
 
@@ -186,6 +188,24 @@ export function HomeScreen({ navigation }) {
         .post("/setmode?op=1&auth=" + robotAuthCode)
         .then(function (response) {
           setrobotOPmode(1); //Blockly
+        })
+        .catch(function (error) {
+          // todo
+        });
+    }
+  }
+
+  function gotoAlgs() {
+    navigation.navigate("areaCoverageScreen",{
+      robotAuthCodeAlgs: robotAuthCode,
+    });
+
+    // controllo che la modalità non sia già stata impostata precedentemente
+    if (robotOPmode != 100) {
+      instance
+        .post("/setmode?op=100&auth=" + robotAuthCode)
+        .then(function (response) {
+          setrobotOPmode(100); // Void
         })
         .catch(function (error) {
           // todo
@@ -316,14 +336,7 @@ export function HomeScreen({ navigation }) {
             </Text>
           )}
           <Button title="Programma Robot" onPress={gotoBlockly} />
-          <Button 
-          title="areaCoverage Scripts" 
-          onPress={() => { 
-            navigation.navigate("areaCoverageScreen",{
-              robotAuthCodeAlgs: robotAuthCode,
-            });
-          }} 
-          />
+          <Button title="Area Coverage Algorithms" onPress={gotoAlgs} />
           <Button title="Disconnetti Robot" onPress={disconnectRobot} />
         </ScrollView>
       ) : isConnLoading ? (
@@ -357,6 +370,15 @@ export function getCodeBlockly() {
 
 export function runCodeBlockly() {
   runCode();
+}
+
+export function networkErrorAlert() {
+  Alert.alert(
+    "Impossibile completare l'operazione", 
+    "Verificare la connessione alla rete",
+    [{ text: "OK" }], 
+    { cancelable: true }
+  );
 }
 
 const styles = StyleSheet.create({

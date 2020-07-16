@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Platform, ActivityIndicator, Alert } from "react-native";
 import WebView from "react-native-webview";
+import { useAsyncStorage } from "@react-native-community/async-storage";
 
 import axios from "axios";
 
@@ -12,6 +13,8 @@ const instance = axios.create({
   baseURL: "http://10.0.0.116/api",
   //timeout: 1000,
 });
+
+const { getItem, setItem, removeItem } = useAsyncStorage("@blockly");
 
 class BlocklyPage extends Component {
   constructor(props) {
@@ -74,7 +77,22 @@ class BlocklyPage extends Component {
           //
           alert("errore: " + e);
         });
+    } else if(message.id == 3) {
+      var data = message.data;
+
+      if(data == 'LOAD') {
+        // load workspace
+        loadWorkspace();
+
+      } else {
+        // backup workspace
+        backupWorkspace(data);
+
+      }
+    } else if(message.id >= 4) {
+      alert(message.data);
     }
+
   }
 
   render() {
@@ -89,8 +107,11 @@ class BlocklyPage extends Component {
         onMessage={this.handleRequest}
         renderLoading={this.LoadingIndicatorView}
         startInLoadingState={true}
-        cacheEnabled={false}
+        //cacheEnabled={false}
         incognito={true}
+        onLoad={syntheticEvent => {
+          loadWorkspace();
+        }}
       />
     );
   }
@@ -98,6 +119,25 @@ class BlocklyPage extends Component {
 
 function LoadingIndicatorView() {
   return <ActivityIndicator size="large" />;
+}
+
+async function loadWorkspace() {
+  var workspace = await getItem();
+
+  if (workspace != null) {
+    // rimozione line breaks \r\n , \n , \r
+    workspace_safe = workspace.replace(/(\r\n|\n|\r)/gm,"")
+    
+    // inject js
+    const run = "loadBlocklyWorkspace('" + workspace_safe + "');true;";
+    webref.injectJavaScript(run);
+  }
+}
+async function backupWorkspace(newValue) {
+  await setItem(newValue);
+}
+async function deleteWorkspace() {
+  await removeItem();
 }
 
 export function getCode() {

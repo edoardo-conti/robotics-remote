@@ -37,6 +37,7 @@ function MainStackScreen() {
       <MainStack.Screen
         name="areaCoverageScreen"
         component={areaCoverageScreen}
+        options={{ title: "Area Coverage Algorithms" }}
       />
     </MainStack.Navigator>
   );

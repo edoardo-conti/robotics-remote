@@ -5,7 +5,8 @@ import Swiper from 'react-native-swiper'
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://10.0.0.116/api",
+  //baseURL: "http://10.0.0.116/api",
+  baseURL: "http://arduino-wifi-robot-0df8/api",
   timeout: 3000,
 });
 const modes = [

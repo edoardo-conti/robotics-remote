@@ -139,6 +139,11 @@ export function HomeScreen({ navigation }) {
       .finally(function () {
         setConnLoading(false);
       });
+
+    // debug (todo)
+    // da rimuovere, utilizzato per entrare in grafica senza conferma http
+    //setrobotAuthCode(-1);
+    //setRobotConnected(true);
   }
 
   function disconnectRobot() {
@@ -178,6 +183,7 @@ export function HomeScreen({ navigation }) {
   }
 
   function gotoBlockly() {
+    // todo: check navigation.jumpTo('Profile', { owner: 'Michaś' });
     navigation.navigate("Blockly", {
       robotAuthCodeBlockly: robotAuthCode,
     });

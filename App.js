@@ -1,15 +1,45 @@
 import React from "react";
-import Constants from "expo-constants";
-import { Button, View, Text } from "react-native";
+import { Button } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import SyntaxHighlighter from 'react-native-syntax-highlighter';
-import { docco } from 'react-syntax-highlighter/styles/hljs';
 
-import { HomeScreen, BlocklyScreen, areaCoverageScreen, getCodeBlockly, runCodeBlockly } from "./Helper";
+import { HomeScreen, BlocklyScreen, areaCoverageScreen } from "./Helper";
+import { getCode } from "./BlocklyPage";
 
-//const Stack = createStackNavigator();
+const Stack = createStackNavigator();
 
+export default (App) => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ title: "Home" }}
+        />
+        <Stack.Screen 
+          name="Blockly" 
+          component={BlocklyScreen} 
+          options={{
+            headerRight: () => (
+              <Button
+                onPress={getCode}
+                title="Get Code"
+              />
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="areaCoverageScreen"
+          component={areaCoverageScreen}
+          options={{ title: "Area Coverage Algorithms" }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+/*
 const MainStack = createStackNavigator();
 const RootStack = createStackNavigator();
 
@@ -73,6 +103,7 @@ export default (App) => {
     </NavigationContainer>
   );
 };
+*/
 
 /*
 export default (App) => {

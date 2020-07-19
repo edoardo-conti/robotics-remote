@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Platform, ActivityIndicator, Alert, View, Modal, Button, StyleSheet } from "react-native";
+import { Platform, ActivityIndicator, Alert, View, Modal, TouchableOpacity, Text, StyleSheet } from "react-native";
 import WebView from "react-native-webview";
 import { useAsyncStorage } from "@react-native-community/async-storage";
 import SyntaxHighlighter from 'react-native-syntax-highlighter';
@@ -124,18 +124,20 @@ class BlocklyPage extends Component {
                 {this.state.code}
               </SyntaxHighlighter>
               <View style={styles.modalButtonsView}>
-                <Button
-                  onPress={() => {
-                    this.setState({modalVisible: false})
-                  }}
-                  title="Chiudi"
-                  style={styles.modalButtonClose}
-                />
-                <Button 
+                <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonClose]}
+                onPress={() => {
+                  this.setState({modalVisible: false})
+                }}
+                >
+                <Text style={styles.buttonText}>Chiudi</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonRunCode]}
                 onPress={runCode} 
-                title="Esegui Codice" 
-                style={styles.modalButtonRunCode}
-                />
+                >
+                <Text style={[styles.buttonText, styles.buttonRunCodeText]}>Esegui Codice</Text>
+                </TouchableOpacity>
               </View>
           </View>
         </Modal>
@@ -206,10 +208,26 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    padding: 30,
+    padding: 10,
+  },
+  modalButton: {
+    padding: 14,
+    margin: 10,
+    alignSelf: 'stretch',
+    borderRadius: 14,
+    alignItems: 'center',
   },
   modalButtonClose: {
+    backgroundColor: "#DDDDDD",
   },
   modalButtonRunCode: {
+    backgroundColor: "#ffa700",
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonRunCodeText: {
+    color: '#fff',
   }
 });

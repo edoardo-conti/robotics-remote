@@ -25,6 +25,14 @@ const instance = axios.create({
   //timeout: 1000,
 });
 
+/*
+ * Sprites
+ */
+const sprites = {
+  robot: require('./assets/robot.png'),
+  arrow: require('./assets/arrow_min.png'),
+};
+
 export function HomeScreen({ navigation }) {
   // robot connection status
   const [isRobotConnected, setRobotConnected] = useState(false);
@@ -290,8 +298,8 @@ export function HomeScreen({ navigation }) {
                 onPressOut={() => motorMove("stop")}
               >
                 <Image 
-                source={require('./assets/arrow_2.png')} 
-                style={styles.arrowUp}
+                source={sprites.arrow} 
+                style={[styles.robotArrowsCommand, styles.arrowUp]}
                 />
               </TouchableWithoutFeedback>
               <View style={styles.viewRobotCenterRow}>
@@ -300,12 +308,12 @@ export function HomeScreen({ navigation }) {
                   onPressOut={() => motorMove("stop")}
                 >
                   <Image 
-                  source={require('./assets/arrow_2.png')} 
-                  style={styles.arrowLeft}
+                  source={sprites.arrow} 
+                  style={[styles.robotArrowsCommand, styles.arrowLeft]}
                   />
                 </TouchableWithoutFeedback>
                 <Image 
-                source={require('./assets/robot_sprite.png')} 
+                source={sprites.robot} 
                 style={styles.robotSprite}
                 />
                 <TouchableWithoutFeedback
@@ -313,8 +321,8 @@ export function HomeScreen({ navigation }) {
                   onPressOut={() => motorMove("stop")}
                 >
                   <Image 
-                  source={require('./assets/arrow_2.png')} 
-                  style={styles.arrowRight}
+                  source={sprites.arrow} 
+                  style={[styles.robotArrowsCommand, styles.arrowRight]}
                   />
                 </TouchableWithoutFeedback>
               </View>
@@ -323,8 +331,8 @@ export function HomeScreen({ navigation }) {
                 onPressOut={() => motorMove("stop")}
               >
                 <Image 
-                source={require('./assets/arrow_2.png')} 
-                style={styles.arrowDown}
+                source={sprites.arrow} 
+                style={[styles.robotArrowsCommand, styles.arrowDown]}
                 />
               </TouchableWithoutFeedback>
             </View>
@@ -387,6 +395,10 @@ export function networkErrorAlert() {
   );
 }
 
+function Separator() {
+  return <View style={styles.separator}></View>;
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -398,43 +410,40 @@ const styles = StyleSheet.create({
   viewRobot: {
     flex: 1,
     flexDirection: "column",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
     alignItems: "center",
-    justifyContent: "flex-start"
+    //backgroundColor: "red", // layout debug
+    //paddingTop: Constants.statusBarHeight
   },
   viewRobotCenterRow: {
+    flex: 1,
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
-    flexWrap: "wrap",
+    justifyContent: "space-evenly",
   },
   robotSprite: {
     flex: 1,
     width: 500,
     height: 500,
-    marginRight: 10,
     resizeMode: "contain"
   },
-  arrowUp: {
+  robotArrowsCommand: {
     width: 50,
     height: 50,
-    //marginBottom: -150,
+    //backgroundColor: "blue" // layout debug
+  },
+  arrowUp: {
   },
   arrowRight: {
-    width: 50,
-    height: 50,
     marginRight: 10,
     transform: [{ rotate: '90deg' }]
   },
   arrowLeft: {
-    width: 50,
-    height: 50,
     marginLeft: 10,
     transform: [{ rotate: '-90deg' }]
   },
   arrowDown: {
-    width: 50,
-    height: 50,
-    marginTop: -150,
     transform: [{ rotate: '180deg' }]
   },
 });

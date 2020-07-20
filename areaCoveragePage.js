@@ -171,7 +171,7 @@ export default class SwiperComponent extends Component {
 
     stopExploring = (mode) => {
         // http request
-        instance.post("/setmode?op=100&auth=" + this.state.authcode)
+        instance.post("/setmode?op=-1&auth=" + this.state.authcode)
         .catch(function(e) {
             Alert.alert(
                 "Impossibile completare l'operazione", 

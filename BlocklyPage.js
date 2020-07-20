@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     padding: 14,
     margin: 10,
     alignSelf: 'stretch',
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
   },
   modalButtonClose: {

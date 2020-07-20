@@ -10,11 +10,15 @@ import {
   ScrollView,
   RefreshControl,
   Image,
-  Alert
+  Alert,
+  TouchableOpacity,
+  Platform
 } from "react-native";
 import Constants from "expo-constants";
 import { useAsyncStorage } from "@react-native-community/async-storage";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 
 import axios from "axios";
 import BlocklyPage, { getCode, runCode } from "./BlocklyPage";
@@ -29,8 +33,8 @@ const instance = axios.create({
  * Sprites
  */
 const sprites = {
-  robot: require('./assets/robot.png'),
-  arrow: require('./assets/arrow_min.png'),
+  robot: require("./assets/robot.png"),
+  arrow: require("./assets/arrow_min_white.png"),
 };
 
 export function HomeScreen({ navigation }) {
@@ -68,7 +72,7 @@ export function HomeScreen({ navigation }) {
 
       setrobotAuthCode(jsonValueParsed.authcode);
       setRobotConnected(jsonValueParsed.connected);
-      
+
       // load sensors (todo)
       getRobotInfo(jsonValueParsed.authcode);
 
@@ -136,9 +140,9 @@ export function HomeScreen({ navigation }) {
               {
                 text: "Chiudi",
                 onPress: () => console.log("Cancel Pressed"),
-                style: "cancel"
+                style: "cancel",
               },
-              { text: "Riprova", onPress: () => connectRobot() }
+              { text: "Riprova", onPress: () => connectRobot() },
             ],
             { cancelable: false }
           );
@@ -168,7 +172,7 @@ export function HomeScreen({ navigation }) {
         }
       })
       .catch(function (error) {
-        if(error.response != null) {
+        if (error.response != null) {
           alert(error.response.data.message);
         }
       });
@@ -210,16 +214,16 @@ export function HomeScreen({ navigation }) {
   }
 
   function gotoAlgs() {
-    navigation.navigate("areaCoverageScreen",{
+    navigation.navigate("areaCoverageScreen", {
       robotAuthCodeAlgs: robotAuthCode,
     });
 
     // controllo che la modalità non sia già stata impostata precedentemente
-    if (robotOPmode != 100) {
+    if (robotOPmode != -1) {
       instance
-        .post("/setmode?op=100&auth=" + robotAuthCode)
+        .post("/setmode?op=-1&auth=" + robotAuthCode)
         .then(function (response) {
-          setrobotOPmode(100); // Void
+          setrobotOPmode(-1); // Void
         })
         .catch(function (error) {
           // todo
@@ -254,13 +258,13 @@ export function HomeScreen({ navigation }) {
     }
 
     instance
-    .post(urlReq)
-    .then(function (response) {
-      //
-    })
-    .catch(function (error) {
-      //
-    });
+      .post(urlReq)
+      .then(function (response) {
+        //
+      })
+      .catch(function (error) {
+        //
+      });
   }
 
   useFocusEffect(
@@ -279,80 +283,122 @@ export function HomeScreen({ navigation }) {
     // recupero informazioni salvate localmente nel dispositivo
     // per tenere traccia della connessione tra client e unità robot
     readItemFromStorage();
-
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       {isRobotConnected ? (
-        <ScrollView
-          contentContainerStyle={styles.scrollView}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+        <LinearGradient
+          colors={["#fea735", "#fe7235"]}
+          style={styles.mainLineaGradient}
         >
-          {robotOPmode == 0 ? (
-            <View style={styles.viewRobot}>
-              <TouchableWithoutFeedback
-                onPressIn={() => motorMove("forward")}
-                onPressOut={() => motorMove("stop")}
-              >
-                <Image 
-                source={sprites.arrow} 
-                style={[styles.robotArrowsCommand, styles.arrowUp]}
-                />
-              </TouchableWithoutFeedback>
-              <View style={styles.viewRobotCenterRow}>
+          <ScrollView
+            contentContainerStyle={styles.scrollView}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            {robotOPmode == 0 ? (
+              <View style={styles.viewRobot}>
                 <TouchableWithoutFeedback
-                  onPressIn={() => motorMove("left")}
+                  onPressIn={() => motorMove("forward")}
                   onPressOut={() => motorMove("stop")}
                 >
-                  <Image 
-                  source={sprites.arrow} 
-                  style={[styles.robotArrowsCommand, styles.arrowLeft]}
+                  <Image
+                    source={sprites.arrow}
+                    style={[styles.robotArrowsCommand, styles.arrowUp]}
                   />
                 </TouchableWithoutFeedback>
-                <Image 
-                source={sprites.robot} 
-                style={styles.robotSprite}
-                />
+                <View style={styles.viewRobotCenterRow}>
+                  <TouchableWithoutFeedback
+                    onPressIn={() => motorMove("left")}
+                    onPressOut={() => motorMove("stop")}
+                  >
+                    <Image
+                      source={sprites.arrow}
+                      style={[styles.robotArrowsCommand, styles.arrowLeft]}
+                    />
+                  </TouchableWithoutFeedback>
+                  <Image source={sprites.robot} style={styles.robotSprite} />
+                  <TouchableWithoutFeedback
+                    onPressIn={() => motorMove("right")}
+                    onPressOut={() => motorMove("stop")}
+                  >
+                    <Image
+                      source={sprites.arrow}
+                      style={[styles.robotArrowsCommand, styles.arrowRight]}
+                    />
+                  </TouchableWithoutFeedback>
+                </View>
                 <TouchableWithoutFeedback
-                  onPressIn={() => motorMove("right")}
+                  onPressIn={() => motorMove("backward")}
                   onPressOut={() => motorMove("stop")}
                 >
-                  <Image 
-                  source={sprites.arrow} 
-                  style={[styles.robotArrowsCommand, styles.arrowRight]}
+                  <Image
+                    source={sprites.arrow}
+                    style={[styles.robotArrowsCommand, styles.arrowDown]}
                   />
                 </TouchableWithoutFeedback>
               </View>
-              <TouchableWithoutFeedback
-                onPressIn={() => motorMove("backward")}
-                onPressOut={() => motorMove("stop")}
-              >
-                <Image 
-                source={sprites.arrow} 
-                style={[styles.robotArrowsCommand, styles.arrowDown]}
+            ) : (
+              <View style={styles.viewRobot}>
+                <Button
+                  onPress={enableRemoteControl}
+                  title="Abilita controllo remoto"
                 />
-              </TouchableWithoutFeedback>
+              </View>
+            )}
+
+            <View style={styles.viewOptions}>
+              {isBattLoading ? (
+                <ActivityIndicator />
+              ) : (
+                <View style={styles.batteryView}>
+                  <Text style={styles.batteryViewTitle}>BATTERIA</Text>
+                  <View style={styles.tabView}>
+                    <View style={styles.batteryViewRow}>
+                      <Text style={styles.batteryViewLabel}>
+                        Tensione{`\t\t\t`}
+                      </Text>
+                      <Text style={styles.batteryViewVoltage}>
+                        {(battery.voltage / 1000).toFixed(2)}V
+                      </Text>
+                    </View>
+                    <View
+                      style={[styles.batteryViewRow, styles.batteryViewRowLast]}
+                    >
+                      <Text style={styles.batteryViewLabel}>
+                        Livello carica{`\t\t`}
+                      </Text>
+                      <Text style={styles.batteryViewLevel}>
+                        {battery.level}%
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+              <View style={styles.tabView}>
+                <FontAwesome5 name="code" size={32} color="black" />
+                <TouchableOpacity
+                  style={styles.tabViewButton}
+                  onPress={gotoBlockly}
+                >
+                  <Text style={styles.tabViewButtonTittle}>Programma Robot</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.tabView}>
+                <FontAwesome5 name="braille" size={32} color="black" />
+                <TouchableOpacity
+                  style={styles.tabViewButton}
+                  onPress={gotoAlgs}
+                >
+                  <Text style={styles.tabViewButtonTittle}>Area Coverage Algorithms</Text>
+                </TouchableOpacity>
+              </View>
+              <Button title="Disconnetti Robot" onPress={disconnectRobot} />
             </View>
-          ) : (
-            <Button
-              onPress={enableRemoteControl}
-              title="Abilita controllo remoto"
-            />
-          )}
-          {isBattLoading ? (
-            <ActivityIndicator />
-          ) : (
-            <Text>
-              Batteria: {battery.voltage / 1000}V ({battery.level}%)
-            </Text>
-          )}
-          <Button title="Programma Robot" onPress={gotoBlockly} />
-          <Button title="Area Coverage Algorithms" onPress={gotoAlgs} />
-          <Button title="Disconnetti Robot" onPress={disconnectRobot} />
-        </ScrollView>
+          </ScrollView>
+        </LinearGradient>
       ) : isConnLoading ? (
         <ActivityIndicator />
       ) : (
@@ -368,7 +414,12 @@ export function BlocklyScreen({ route, navigation }) {
   /* Get the params */
   const { robotAuthCodeBlockly } = route.params;
 
-  return <BlocklyPage robotAuthCodeBlockly={robotAuthCodeBlockly} navigation={navigation} />;
+  return (
+    <BlocklyPage
+      robotAuthCodeBlockly={robotAuthCodeBlockly}
+      navigation={navigation}
+    />
+  );
 }
 
 export function areaCoverageScreen({ route, navigation }) {
@@ -388,9 +439,9 @@ export function runCodeBlockly() {
 
 export function networkErrorAlert() {
   Alert.alert(
-    "Impossibile completare l'operazione", 
+    "Impossibile completare l'operazione",
     "Verificare la connessione alla rete",
-    [{ text: "OK" }], 
+    [{ text: "OK" }],
     { cancelable: true }
   );
 }
@@ -398,23 +449,68 @@ export function networkErrorAlert() {
 function Separator() {
   return <View style={styles.separator}></View>;
 }
-
+const platformFont = (Platform.OS === 'android') ? "Roboto" : "Helvetica Neue";
 const styles = StyleSheet.create({
+  /*
+   * ###### Stili Generali ######
+   */
   container: {
-    flex: 1,
-    marginTop: Constants.statusBarHeight,
+    //flex: 1,
+    backgroundColor: "white",
+    fontFamily: platformFont,
+    //marginTop: Constants.statusBarHeight,
+  },
+  separator: {
+    marginVertical: 8,
+    borderBottomColor: "#737373",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  mainLineaGradient: {
+    //flex: 1,
   },
   scrollView: {
-    flex: 1,
+    //flex: 1,
+    //backgroundColor: "red"
   },
+  tabView: {
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    marginBottom: 20,
+  },
+  tabViewButton: {
+    backgroundColor: "rgba(0,0,0,.04)",
+    padding: 14,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  tabViewButtonTittle: {
+    fontSize: 18,
+    fontFamily: platformFont,
+    color: "#012e63",
+    fontWeight: "500",
+  },
+
+  /*
+   * ###### Dashboard Robot ######
+   */
   viewRobot: {
     flex: 1,
     flexDirection: "column",
     flexWrap: "wrap",
-    justifyContent: "flex-start",
+    //justifyContent: "flex-start",
+    justifyContent: "space-evenly",
     alignItems: "center",
     //backgroundColor: "red", // layout debug
-    //paddingTop: Constants.statusBarHeight
+    //paddingTop: Constants.statusBarHeight,
+    height: 300,
   },
   viewRobotCenterRow: {
     flex: 1,
@@ -426,24 +522,81 @@ const styles = StyleSheet.create({
     flex: 1,
     width: 500,
     height: 500,
-    resizeMode: "contain"
+    resizeMode: "contain",
+    zIndex: 1,
   },
   robotArrowsCommand: {
     width: 50,
     height: 50,
-    //backgroundColor: "blue" // layout debug
+    //backgroundColor: "blue", // layout debug
+    margin: 10,
   },
   arrowUp: {
+    zIndex: 2,
   },
   arrowRight: {
     marginRight: 10,
-    transform: [{ rotate: '90deg' }]
+    transform: [{ rotate: "90deg" }],
+    zIndex: 2,
   },
   arrowLeft: {
     marginLeft: 10,
-    transform: [{ rotate: '-90deg' }]
+    transform: [{ rotate: "-90deg" }],
+    zIndex: 2,
   },
   arrowDown: {
-    transform: [{ rotate: '180deg' }]
+    transform: [{ rotate: "180deg" }],
+    zIndex: 2,
+  },
+  viewOptions: {
+    backgroundColor: "snow",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 20,
+    paddingTop: 30,
+    shadowColor: "#752400",
+    shadowOffset: {
+      width: 0,
+      height: -10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+  },
+  /*
+   * ###### Battery ######
+   */
+  batteryViewTitle: {
+    fontWeight: "bold",
+    marginBottom: 5,
+    letterSpacing: 1,
+    color: "#012e63",
+    fontSize: 12,
+  },
+  batteryViewRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    marginBottom: 15,
+  },
+  batteryViewRowLast: {
+    marginBottom: 0,
+  },
+  batteryViewLabel: {
+    fontSize: 16,
+    fontFamily: platformFont,
+    color: "#3b6291",
+    fontWeight: "500",
+  },
+  batteryViewVoltage: {
+    fontSize: 16,
+    fontFamily: platformFont,
+    color: "#012e63",
+    fontWeight: "500",
+  },
+  batteryViewLevel: {
+    fontSize: 16,
+    fontFamily: platformFont,
+    color: "#012e63",
+    fontWeight: "500",
   },
 });

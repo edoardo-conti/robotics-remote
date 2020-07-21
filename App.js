@@ -1,21 +1,47 @@
 import React from "react";
 import { Button } from "react-native";
+import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { LinearGradient } from "expo-linear-gradient";
+
+import { createNativeStackNavigator } from 'react-native-screens/native-stack';
 
 import { HomeScreen, BlocklyScreen, areaCoverageScreen } from "./Helper";
 import { getCode } from "./BlocklyPage";
 
-const Stack = createStackNavigator();
+import { BlurView } from 'expo-blur';
+
+enableScreens();
+
+//const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 export default (App) => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator 
+      initialRouteName="Home"
+      screenOptions={{
+        headerLargeTitle: true,
+        headerHideShadow: true,
+        //headerStyle: {backgroundColor: "#ffab24"},
+        //headerTintColor: "white"
+      }}>
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: "Home" }}
+          options={{ 
+            title: "Dashboard",
+            headerTransparent: true,
+            headerBackground: () => (
+              <BlurView
+                tint="dark"
+                intensity={100}
+                style={StyleSheet.absoluteFill}
+              />
+            ),
+          }}
         />
         <Stack.Screen 
           name="Blockly" 
@@ -24,7 +50,7 @@ export default (App) => {
             headerRight: () => (
               <Button
                 onPress={getCode}
-                title="Get Code"
+                title="Codice"
               />
             ),
           }}

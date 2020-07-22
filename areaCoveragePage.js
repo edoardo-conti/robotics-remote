@@ -105,7 +105,7 @@ export default class SwiperComponent extends Component {
         <View style={styles.slide2}>
           <LottieView
             source={require("./assets/animations/boustrophedon.json")}
-            autoPlay
+            //autoPlay
             loop={false}
             style={styles.algsSlideAnimation}
             resizeMode="cover"
@@ -149,7 +149,7 @@ export default class SwiperComponent extends Component {
         <View style={styles.slide3}>
           <LottieView
             source={require("./assets/animations/spiral.json")}
-            autoPlay
+            //autoPlay
             loop={false}
             style={styles.algsSlideAnimation}
             resizeMode="cover"

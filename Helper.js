@@ -23,6 +23,8 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 
 import LottieView from "lottie-react-native";
 
+import useInterval from '@use-it/interval';
+
 import axios from "axios";
 import BlocklyPage, { getCode, runCode } from "./BlocklyPage";
 import SwiperComponent from "./areaCoveragePage";
@@ -60,6 +62,8 @@ export function HomeScreen({ navigation }) {
   const [isConnLoading, setConnLoading] = useState(false);
   // refresh
   const [refreshing, setRefreshing] = React.useState(false);
+  // timer
+  const [isTimerRunning, setIsTimerRunning] = useState(true);
 
   //const onRefresh = React.useCallback(() => {
   function onRefresh() {
@@ -140,7 +144,19 @@ export function HomeScreen({ navigation }) {
       })
       .catch(function (error) {
         if (error.response != null) {
-          alert(error.response.data.message);
+          Alert.alert(
+            "Impossibile connettersi all'unità Robot",
+            error.response.data.message,
+            [
+              {
+                text: "Chiudi",
+                onPress: () => console.log("Cancel Pressed"),
+                style: "cancel",
+              },
+              { text: "Riprova", onPress: () => connectRobot() },
+            ],
+            { cancelable: false }
+          );
         } else {
           Alert.alert(
             "Impossibile connettersi all'unità Robot",
@@ -178,11 +194,16 @@ export function HomeScreen({ navigation }) {
           // alert(response.data.message);
 
           deleteItemFromStorage();
+
+          // play animazione login
+          if(Platform.OS != 'android') {
+            this.animation.play(0,160);
+          }
         }
       })
       .catch(function (error) {
         if (error.response != null) {
-          alert(error.response.data.message);
+          //alert(error.response.data.message);
         }
       });
   }
@@ -199,7 +220,7 @@ export function HomeScreen({ navigation }) {
         }
       })
       .catch(function (error) {
-        alert("errore recupero info batteria robot");
+        //alert("errore recupero info batteria robot");
       });
   }
 
@@ -269,13 +290,45 @@ export function HomeScreen({ navigation }) {
     instance
       .post(urlReq)
       .then(function (response) {
-        // 
+        //
         setRobotMovement(direction);
       })
       .catch(function (error) {
         //
       });
   }
+
+  useInterval(() => {
+    
+    // TODO: timer per controllo connessione con robot
+    if(isRobotConnected == true) {
+      instance
+      .post('/ping?auth=' + robotAuthCode)
+      .then(function (response) {
+        //
+        // alert('pong');
+      })
+      .catch(function (error) {
+        //
+        setIsTimerRunning(false);
+        Alert.alert(
+          "Connessione con unità Robot persa",
+          "Vuoi riconnetterti? ",
+          [
+            {
+              text: "No",
+              onPress: () => disconnectRobot(),
+              style: "cancel",
+            },
+            { text: "Si", 
+            onPress: () => connectRobot() },
+          ],
+          { cancelable: false }
+        );
+      });
+    }
+    
+  }, isTimerRunning ? 8000 : null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -293,176 +346,202 @@ export function HomeScreen({ navigation }) {
     // recupero informazioni salvate localmente nel dispositivo
     // per tenere traccia della connessione tra client e unità robot
     readItemFromStorage();
+
+    //this.animation.play();
+    if(!isRobotConnected && Platform.OS != 'android') {
+      this.animation.play(0,160);
+    }
+    
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      
       {isRobotConnected ? (
-        <LinearGradient
-          //colors={["#fea735", "#fe7235"]}
-          //colors={["#ff6532", "#ffab24"]}
-          colors={["#ffab24", "#ff6532"]}
-          //start={{ x: 0, y: 1 }}
-          //end={{ x: 1, y: 1 }}
-          start={[0.0, 0.1]}
-          end={[0.0, 0.5]}
-          style={styles.mainLineaGradient}
+        <ScrollView
+          contentInsetAdjustmentBehavior={"always"}
+          contentContainerStyle={styles.scrollView}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         >
-          
-          <ScrollView
-            contentContainerStyle={styles.scrollView}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
+          {isRobotConnected ? /*<PostHeader />*/ null : null}
+          <LinearGradient
+            //colors={["#fea735", "#fe7235"]}
+            //colors={["#ff6532", "#ffab24"]}
+            colors={["#ffab24", "#ff6532"]}
+            //start={{ x: 0, y: 1 }}
+            //end={{ x: 1, y: 1 }}
+            start={[0.0, 0.1]}
+            end={[0.0, 0.5]}
+            style={styles.mainLineaGradient}
           >
-            {isRobotConnected ? /*<PostHeader />*/ null : null}
-            
-              <View style={styles.viewRobot}>
-                {robotOPmode != 0 ? (
-                    <View style={styles.enableRemoteControl}>
-                    <LinearGradient
-                      colors={["rgba(255,255,255,.4)", "#ff6532"]}
-                      style={styles.enableRCLineaGradient}
+            <View style={styles.viewRobot}>
+              {robotOPmode != 0 ? (
+                <View style={styles.enableRemoteControl}>
+                  <LinearGradient
+                    colors={["rgba(255,255,255,.4)", "#ff6532"]}
+                    style={styles.enableRCLineaGradient}
+                  >
+                    <TouchableOpacity
+                      onPress={enableRemoteControl}
+                      style={styles.enableRemoteControlButton}
                     >
-                      <TouchableOpacity
-                    onPress={enableRemoteControl}
-                    style={styles.enableRemoteControlButton}
-                    ><Text style={styles.enableRemoteControlButtonText}>Abilita Controllo Remoto</Text>
+                      <Text style={styles.enableRemoteControlButtonText}>
+                        Abilita Controllo Remoto
+                      </Text>
                     </TouchableOpacity>
-                    </LinearGradient>
-                    </View>
-                  ) : null}
+                  </LinearGradient>
+                </View>
+              ) : null}
+              <TouchableWithoutFeedback
+                onPressIn={() => motorMove("forward")}
+                onPressOut={() => motorMove("stop")}
+              >
+                <Image
+                  source={sprites.arrow}
+                  style={[styles.robotArrowsCommand, styles.arrowUp]}
+                />
+              </TouchableWithoutFeedback>
+              <View style={styles.viewRobotCenterRow}>
                 <TouchableWithoutFeedback
-                  onPressIn={() => motorMove("forward")}
+                  onPressIn={() => motorMove("left")}
                   onPressOut={() => motorMove("stop")}
                 >
                   <Image
                     source={sprites.arrow}
-                    style={[styles.robotArrowsCommand, styles.arrowUp]}
+                    style={[styles.robotArrowsCommand, styles.arrowLeft]}
                   />
                 </TouchableWithoutFeedback>
-                <View style={styles.viewRobotCenterRow}>
-                  <TouchableWithoutFeedback
-                    onPressIn={() => motorMove("left")}
-                    onPressOut={() => motorMove("stop")}
-                  >
-                    <Image
-                      source={sprites.arrow}
-                      style={[styles.robotArrowsCommand, styles.arrowLeft]}
-                    />
-                  </TouchableWithoutFeedback>
-                  {robotMovement == "stop" ? ( <Image source={sprites.robot} style={styles.robotSprite} /> ) : null}
-                  {robotMovement == "forward" ? ( <Image source={sprites.robotForward} style={styles.robotSprite} /> ) : null}
-                  {robotMovement == "left" ? ( <Image source={sprites.robotTurnLeft} style={styles.robotSprite} /> ) : null}
-                  {robotMovement == "right" ? ( <Image source={sprites.robotTurnRight} style={styles.robotSprite} /> ) : null}
-                  {robotMovement == "backward" ? ( <Image source={sprites.robotBackwards} style={styles.robotSprite} /> ) : null}
-                  <TouchableWithoutFeedback
-                    onPressIn={() => motorMove("right")}
-                    onPressOut={() => motorMove("stop")}
-                  >
-                    <Image
-                      source={sprites.arrow}
-                      style={[styles.robotArrowsCommand, styles.arrowRight]}
-                    />
-                  </TouchableWithoutFeedback>
-                </View>
+                {robotMovement == "stop" ? (
+                  <Image source={sprites.robot} style={styles.robotSprite} />
+                ) : null}
+                {robotMovement == "forward" ? (
+                  <Image
+                    source={sprites.robotForward}
+                    style={styles.robotSprite}
+                  />
+                ) : null}
+                {robotMovement == "left" ? (
+                  <Image
+                    source={sprites.robotTurnLeft}
+                    style={styles.robotSprite}
+                  />
+                ) : null}
+                {robotMovement == "right" ? (
+                  <Image
+                    source={sprites.robotTurnRight}
+                    style={styles.robotSprite}
+                  />
+                ) : null}
+                {robotMovement == "backward" ? (
+                  <Image
+                    source={sprites.robotBackwards}
+                    style={styles.robotSprite}
+                  />
+                ) : null}
                 <TouchableWithoutFeedback
-                  onPressIn={() => motorMove("backward")}
+                  onPressIn={() => motorMove("right")}
                   onPressOut={() => motorMove("stop")}
                 >
                   <Image
                     source={sprites.arrow}
-                    style={[styles.robotArrowsCommand, styles.arrowDown]}
+                    style={[styles.robotArrowsCommand, styles.arrowRight]}
                   />
                 </TouchableWithoutFeedback>
               </View>
-         
+              <TouchableWithoutFeedback
+                onPressIn={() => motorMove("backward")}
+                onPressOut={() => motorMove("stop")}
+              >
+                <Image
+                  source={sprites.arrow}
+                  style={[styles.robotArrowsCommand, styles.arrowDown]}
+                />
+              </TouchableWithoutFeedback>
+            </View>
+          </LinearGradient>
 
-            <View style={styles.viewOptions}>
-              <View style={styles.batteryView}>
-                <Text style={styles.tabViewTitle}>BATTERIA</Text>
-                <View style={styles.tabView}>
-                  {isBattLoading ? (
-                    <ActivityIndicator />
-                  ) : (
-                    <View>
-                      <View style={styles.batteryViewRow}>
-                        <Text style={styles.batteryViewLabel}>
-                          Tensione{`\t\t\t`}
-                        </Text>
-                        <Text style={styles.batteryViewVoltage}>
-                          {(battery.voltage / 1000).toFixed(2)}V
-                        </Text>
-                      </View>
-                      <View
-                        style={[
-                          styles.batteryViewRow,
-                          styles.batteryViewRowLast,
-                        ]}
-                      >
-                        <Text style={styles.batteryViewLabel}>
-                          Livello carica{`\t\t`}
-                        </Text>
-                        <Text style={styles.batteryViewLevel}>
-                          {battery.level}%
-                        </Text>
-                      </View>
+          <View style={styles.viewOptions}>
+            <View style={styles.batteryView}>
+              <Text style={styles.tabViewTitle}>BATTERIA</Text>
+              <View style={styles.tabView}>
+                {isBattLoading ? (
+                  <ActivityIndicator />
+                ) : (
+                  <View>
+                    <View style={styles.batteryViewRow}>
+                      <Text style={styles.batteryViewLabel}>
+                        Tensione{`\t\t\t`}
+                      </Text>
+                      <Text style={styles.batteryViewVoltage}>
+                        {(battery.voltage / 1000).toFixed(2)}V
+                      </Text>
                     </View>
-                  )}
-                </View>
+                    <View
+                      style={[styles.batteryViewRow, styles.batteryViewRowLast]}
+                    >
+                      <Text style={styles.batteryViewLabel}>
+                        Livello carica{`\t\t`}
+                      </Text>
+                      <Text style={styles.batteryViewLevel}>
+                        {battery.level}%
+                      </Text>
+                    </View>
+                  </View>
+                )}
               </View>
+            </View>
 
-              <Text style={styles.tabViewTitle}>FUNZIONALITÀ</Text>
-              <View style={[styles.tabView, styles.tabViewAnim]}>
-                <TouchableOpacity
-                  style={[styles.tabViewButton, styles.tabViewButtonAnim]}
-                  onPress={gotoBlockly}
-                >
-                  <Text style={styles.tabViewButtonTitle}>Programma Robot</Text>
-                  <Text style={styles.tabViewButtonDesc}>
-                    Un approccio dedicato alla programmazione a blocchi.
-                  </Text>
-                </TouchableOpacity>
-                <View style={styles.tabViewAnimationContainer}>
-                  {Platform.OS == 'android' ? (
-                    <Image
+            <Text style={styles.tabViewTitle}>FUNZIONALITÀ</Text>
+            <View style={[styles.tabView, styles.tabViewAnim]}>
+              <TouchableOpacity
+                style={[styles.tabViewButton, styles.tabViewButtonAnim]}
+                onPress={gotoBlockly}
+              >
+                <Text style={styles.tabViewButtonTitle}>Programma Robot</Text>
+                <Text style={styles.tabViewButtonDesc}>
+                  Un approccio dedicato alla programmazione a blocchi.
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.tabViewAnimationContainer}>
+                {Platform.OS == "android" ? (
+                  <Image
                     style={styles.tabViewAnimation}
-                    source={require('./assets/images/boy-and-mobile-interactions.png')}
+                    source={require("./assets/images/boy-and-mobile-interactions.png")}
                     resizeMode="cover"
-                    />
-                  ) : (
-                    <LottieView
+                  />
+                ) : (
+                  <LottieView
                     source={require("./assets/animations/boy-and-mobile-interactions.json")}
                     autoPlay
                     loop={true}
                     style={styles.tabViewAnimation}
                     resizeMode="cover"
-                    />
-                  )}
-                </View>
+                  />
+                )}
               </View>
-              <View style={[styles.tabView, styles.tabViewAnim]}>
-                <TouchableOpacity
-                  style={[styles.tabViewButton, styles.tabViewButtonAnim]}
-                  onPress={gotoAlgs}
-                >
-                  <Text style={styles.tabViewButtonTitle}>
-                    Modalità Esplorazione
-                  </Text>
-                  <Text style={styles.tabViewButtonDesc}>
-                    Scopri gli algoritmi di massima copertura di un'area.
-                  </Text>
-                </TouchableOpacity>
-                <View style={styles.tabViewAnimationContainer}>
-                {Platform.OS == 'android' ? (
-                    <Image
+            </View>
+            <View style={[styles.tabView, styles.tabViewAnim]}>
+              <TouchableOpacity
+                style={[styles.tabViewButton, styles.tabViewButtonAnim]}
+                onPress={gotoAlgs}
+              >
+                <Text style={styles.tabViewButtonTitle}>
+                  Modalità Esplorazione
+                </Text>
+                <Text style={styles.tabViewButtonDesc}>
+                  Scopri gli algoritmi di massima copertura di un'area.
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.tabViewAnimationContainer}>
+                {Platform.OS == "android" ? (
+                  <Image
                     style={styles.tabViewAnimation}
-                    source={require('./assets/images/mobile-tap-interaction-animation.png')}
+                    source={require("./assets/images/mobile-tap-interaction-animation.png")}
                     resizeMode="cover"
-                    />
-                  ) : (
-                    <LottieView
+                  />
+                ) : (
+                  <LottieView
                     source={require("./assets/animations/mobile-tap-interaction-animation.json")}
                     autoPlay
                     loop={true}
@@ -472,31 +551,56 @@ export function HomeScreen({ navigation }) {
                     ]}
                     resizeMode="cover"
                   />
-                  )}
-                </View>
-              </View>
-
-              <Text style={styles.tabViewTitle}>IMPOSTAZIONI</Text>
-              <View style={styles.tabView}>
-                <TouchableOpacity
-                  style={styles.disconnectButton}
-                  onPress={disconnectRobot}
-                >
-                  <Text style={styles.disconnectButtonText}>
-                    Disconnetti Robot
-                  </Text>
-                </TouchableOpacity>
+                )}
               </View>
             </View>
-          </ScrollView>
-        </LinearGradient>
-      ) : isConnLoading ? (
-        <ActivityIndicator />
+
+            <Text style={styles.tabViewTitle}>IMPOSTAZIONI</Text>
+            <View style={styles.tabView}>
+              <TouchableOpacity
+                style={styles.disconnectButton}
+                onPress={disconnectRobot}
+              >
+                <Text style={styles.disconnectButtonText}>
+                  Disconnetti Robot
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       ) : (
-        <SafeAreaView style={styles.container}>
-          <Separator />
-          <Button onPress={connectRobot} title="Connetti Robot" />
-        </SafeAreaView>
+        <View style={styles.viewLoggedOut}>
+          <View style={styles.viewLoggedOutAnim}>
+            {Platform.OS == "android" ? (
+              <Image
+                style={styles.viewLoggedOutAndroidImage}
+                source={require("./assets/images/freelancers-life.png")}
+                resizeMode="contain"
+              />
+            ) : (
+              <LottieView
+                source={require("./assets/animations/freelancers-life.json")}
+                //autoPlay
+                loop={false}
+                style={styles.viewLoggedOutAnimation}
+                resizeMode="cover"
+                ref={(animation) => {
+                  this.animation = animation;
+                }}
+              />
+            )}
+          </View>
+          <View style={styles.viewLoggedOutButton}>
+            <TouchableOpacity
+              style={styles.connectButton}
+              onPress={connectRobot}
+            >
+              <Text style={styles.connectButtonText}>
+              {isConnLoading ? 'Connessione in corso...' : 'Connettiti al Robot'}
+                </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
     </SafeAreaView>
   );
@@ -553,17 +657,23 @@ function Separator() {
 }
 
 function PostHeader() {
-  return <ImageBackground source={require("./assets/postHeader.jpg")} style={styles.postHeader} imageStyle={{resizeMode:"stretch"}}></ImageBackground>;
+  return (
+    <ImageBackground
+      source={require("./assets/postHeader.jpg")}
+      style={styles.postHeader}
+      imageStyle={{ resizeMode: "stretch" }}
+    ></ImageBackground>
+  );
 }
 
-const platformFont = (Platform.OS === "android") ? "Roboto" : "Helvetica Neue";
+const platformFont = Platform.OS === "android" ? "Roboto" : "Helvetica Neue";
 const styles = StyleSheet.create({
   /*
    * ###### Stili Generali ######
    */
   container: {
-    //flex: 1,
-    backgroundColor: "white",
+    flex: 1,
+    backgroundColor: "snow",
     fontFamily: platformFont,
     //marginTop: Constants.statusBarHeight,
   },
@@ -579,7 +689,8 @@ const styles = StyleSheet.create({
   },
   mainLineaGradient: {
     //flex: 1,
-    //borderRadius: 15,
+    //borderRadius: 15
+    paddingBottom: 40,
   },
   scrollView: {
     //flex: 1,
@@ -688,7 +799,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-  },  
+  },
   viewRobot: {
     flex: 1,
     flexDirection: "column",
@@ -745,10 +856,11 @@ const styles = StyleSheet.create({
     shadowColor: "#752400",
     shadowOffset: {
       width: 0,
-      height: -10,
+      height: -15,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 10,
+    marginTop: -30,
   },
   /*
    * ###### Battery ######
@@ -794,5 +906,40 @@ const styles = StyleSheet.create({
     fontFamily: platformFont,
     fontWeight: "700",
     fontSize: 15,
-  },  
+  },
+  /*
+   * Accesso
+   */
+  connectButton: {
+    backgroundColor: "#ff6535",
+    padding: 15,
+    alignItems: "center",
+    borderRadius: 15,
+  },
+  connectButtonText: {
+    color: "#fff",
+    fontFamily: platformFont,
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  viewLoggedOut: {
+    flex: 1,
+    backgroundColor: "white",
+    //backgroundColor: "red",
+  },
+  viewLoggedOutAnim: {
+    flex: 5,
+    justifyContent: "center",
+    //backgroundColor: "blue",
+  },
+  viewLoggedOutButton: {
+    flex: 1,
+    paddingTop: 0,
+    padding: 40,
+    //backgroundColor: "green",
+    justifyContent: "center"
+  },
+  viewLoggedOutAnimation: {
+    
+  }
 });

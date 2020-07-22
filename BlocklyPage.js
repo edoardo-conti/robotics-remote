@@ -166,7 +166,8 @@ class BlocklyPage extends Component {
               ) : (
                 <SyntaxHighlighter
                   language="javascript"
-                  //fontSize={16}
+                  customStyle={{padding: 20,}}
+                  fontSize={13}
                   //highlighter={"prism" || "hljs"}
                   highlighter="hljs"
                 >
@@ -241,6 +242,18 @@ async function backupWorkspace(newValue) {
 }
 async function deleteWorkspace() {
   await removeItem();
+}
+
+export function refreshWebView() {
+  // reload webview
+  webref.reload();
+}
+
+export function clearBlocklyWorkspace() {
+  // clear workspace
+  // inject js
+  const run = "Blockly.getMainWorkspace().clear();true;";
+  webref.injectJavaScript(run);
 }
 
 export function getCode() {

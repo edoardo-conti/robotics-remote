@@ -425,13 +425,21 @@ export function HomeScreen({ navigation }) {
                   </Text>
                 </TouchableOpacity>
                 <View style={styles.tabViewAnimationContainer}>
-                  <LottieView
+                  {Platform.OS == 'android' ? (
+                    <Image
+                    style={styles.tabViewAnimation}
+                    source={require('./assets/images/boy-and-mobile-interactions.png')}
+                    resizeMode="cover"
+                    />
+                  ) : (
+                    <LottieView
                     source={require("./assets/animations/boy-and-mobile-interactions.json")}
                     autoPlay
                     loop={true}
                     style={styles.tabViewAnimation}
                     resizeMode="cover"
-                  />
+                    />
+                  )}
                 </View>
               </View>
               <View style={[styles.tabView, styles.tabViewAnim]}>
@@ -440,14 +448,21 @@ export function HomeScreen({ navigation }) {
                   onPress={gotoAlgs}
                 >
                   <Text style={styles.tabViewButtonTitle}>
-                    Area Coverage Algorithms
+                    Modalità Esplorazione
                   </Text>
                   <Text style={styles.tabViewButtonDesc}>
                     Scopri gli algoritmi di massima copertura di un'area.
                   </Text>
                 </TouchableOpacity>
                 <View style={styles.tabViewAnimationContainer}>
-                  <LottieView
+                {Platform.OS == 'android' ? (
+                    <Image
+                    style={styles.tabViewAnimation}
+                    source={require('./assets/images/mobile-tap-interaction-animation.png')}
+                    resizeMode="cover"
+                    />
+                  ) : (
+                    <LottieView
                     source={require("./assets/animations/mobile-tap-interaction-animation.json")}
                     autoPlay
                     loop={true}
@@ -457,6 +472,7 @@ export function HomeScreen({ navigation }) {
                     ]}
                     resizeMode="cover"
                   />
+                  )}
                 </View>
               </View>
 
@@ -601,6 +617,7 @@ const styles = StyleSheet.create({
     fontFamily: platformFont,
     color: "#515a83",
     fontWeight: "700",
+    marginBottom: 2,
   },
   tabViewButtonDesc: {
     fontSize: 12,

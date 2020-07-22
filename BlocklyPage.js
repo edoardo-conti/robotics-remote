@@ -1,9 +1,19 @@
 import React, { Component } from "react";
-import { Platform, ActivityIndicator, Alert, View, Modal, TouchableOpacity, Text, StyleSheet } from "react-native";
+import {
+  Platform,
+  ActivityIndicator,
+  Alert,
+  View,
+  Modal,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Image,
+} from "react-native";
 import WebView from "react-native-webview";
 import { useAsyncStorage } from "@react-native-community/async-storage";
-import SyntaxHighlighter from 'react-native-syntax-highlighter';
-import { docco } from 'react-syntax-highlighter/styles/hljs';
+import SyntaxHighlighter from "react-native-syntax-highlighter";
+import { docco } from "react-syntax-highlighter/styles/hljs";
 
 import LottieView from "lottie-react-native";
 
@@ -29,24 +39,24 @@ class BlocklyPage extends Component {
     authcode = props.robotAuthCodeBlockly;
     navigation = props.navigation;
 
-    this.state = { 
+    this.state = {
       modalVisible: false,
       codeAnimationVisible: true,
       code: "",
-    }
+    };
 
     this.handleRequest = this.handleRequest.bind(this);
   }
-  
+
   getRandomInt = (min, max) => {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min; //Il max è escluso e il min è incluso
-  }
+  };
 
   hideAnimation = () => {
-    this.setState({codeAnimationVisible: false})
-  }
+    this.setState({ codeAnimationVisible: false });
+  };
 
   async handleRequest(event) {
     var message = JSON.parse(event.nativeEvent.data);
@@ -67,11 +77,11 @@ class BlocklyPage extends Component {
     } else if (message.id == 1) {
       // get code
       var code = message.code;
-      
-      this.setState({code: code})
+
+      this.setState({ code: code });
 
       if (code != "") {
-        this.setState({modalVisible: true});
+        this.setState({ modalVisible: true });
 
         setTimeout(this.hideAnimation, 1500);
 
@@ -123,53 +133,70 @@ class BlocklyPage extends Component {
     return (
       <View style={{ flex: 1, flexDirection: "column" }}>
         <View style={{ height: 0 }}>
-        <Modal
-          animationType="slide"
-          presentationStyle="pageSheet"
-          visible={this.state.modalVisible}
-          onDismiss={() => { this.setState({modalVisible: false}) }}
-          onRequestClose={() => { this.setState({modalVisible: false}) }}
-        >
-          <View style={styles.modalView}>
+          <Modal
+            animationType="slide"
+            presentationStyle="pageSheet"
+            visible={this.state.modalVisible}
+            onDismiss={() => {
+              this.setState({ modalVisible: false });
+            }}
+            onRequestClose={() => {
+              this.setState({ modalVisible: false });
+            }}
+          >
+            <View style={styles.modalView}>
               {this.state.codeAnimationVisible ? (
-                <View style={styles.codeAnimationContainer}><LottieView
-                source={require("./assets/animations/code-window.json")}
-                autoPlay
-                loop={true}
-                style={[
-                  styles.codeAnimation,
-                ]}
-                resizeMode="cover"
-              /></View>
+                <View style={styles.codeAnimationContainer}>
+                  {Platform.OS == "android" ? (
+                    <Image
+                      style={[styles.codeImage]}
+                      source={require("./assets/images/code-window.png")}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <LottieView
+                      source={require("./assets/animations/code-window.json")}
+                      autoPlay
+                      loop={true}
+                      style={[styles.codeAnimation]}
+                      resizeMode="cover"
+                    />
+                  )}
+                </View>
               ) : (
-              <SyntaxHighlighter 
-              language='javascript' 
-              //fontSize={16}
-              //highlighter={"prism" || "hljs"}
-              highlighter='hljs'
-              >
-                {this.state.code}
-              </SyntaxHighlighter>
+                <SyntaxHighlighter
+                  language="javascript"
+                  //fontSize={16}
+                  //highlighter={"prism" || "hljs"}
+                  highlighter="hljs"
+                >
+                  {this.state.code}
+                </SyntaxHighlighter>
               )}
               <View style={styles.modalButtonsView}>
                 <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonClose]}
-                onPress={() => {
-                  this.setState({modalVisible: false, codeAnimationVisible: true});
-                }}
+                  style={[styles.modalButton, styles.modalButtonClose]}
+                  onPress={() => {
+                    this.setState({
+                      modalVisible: false,
+                      codeAnimationVisible: true,
+                    });
+                  }}
                 >
-                <Text style={styles.buttonText}>Chiudi</Text>
+                  <Text style={styles.buttonText}>Chiudi</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonRunCode]}
-                onPress={runCode} 
-                disabled={this.state.codeAnimationVisible}
+                  style={[styles.modalButton, styles.modalButtonRunCode]}
+                  onPress={runCode}
+                  disabled={this.state.codeAnimationVisible}
                 >
-                <Text style={[styles.buttonText, styles.buttonRunCodeText]}>Esegui Codice</Text>
+                  <Text style={[styles.buttonText, styles.buttonRunCodeText]}>
+                    Esegui Codice
+                  </Text>
                 </TouchableOpacity>
               </View>
-          </View>
-        </Modal>
+            </View>
+          </Modal>
         </View>
 
         <WebView
@@ -218,13 +245,13 @@ async function deleteWorkspace() {
 
 export function getCode() {
   //const js = 'document.getElementById("getcode").click();true;';
-  const js = 'window.getCode();true;';
+  const js = "window.getCode();true;";
 
   webref.injectJavaScript(js);
 }
 export function runCode() {
   //const js = 'document.getElementById("runcode").click();true;';
-  const js = 'window.runCode();true;';
+  const js = "window.runCode();true;";
 
   webref.injectJavaScript(js);
 }
@@ -236,17 +263,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalButtonsView: {
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    alignItems: "center",
     padding: 10,
   },
   modalButton: {
     padding: 14,
     margin: 10,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalButtonClose: {
     backgroundColor: "#DDDDDD",
@@ -257,15 +284,17 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   buttonRunCodeText: {
-    color: '#fff',
+    color: "#fff",
   },
   codeAnimationContainer: {
     flex: 1,
-  }, 
-  codeAnimation: {
-
+    alignItems: "center",
+  },
+  codeAnimation: {},
+  codeImage: {
+    flex: 1,
   }
 });

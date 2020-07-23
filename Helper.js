@@ -630,8 +630,8 @@ export function HomeScreen({ navigation }) {
             >
               <Text style={styles.connectButtonText}>
                 {isConnLoading
-                  ? <ActivityIndicator color="#fff" />
-                  : "Connettiti al Robot"}
+                  ? "Connessione in corso..."
+                  : "Connettiti al Robot" }
               </Text>
             </TouchableOpacity>
           </View>

@@ -9,6 +9,7 @@ import {
   Text,
   StyleSheet,
   Image,
+  Animated,
 } from "react-native";
 import WebView from "react-native-webview";
 import { useAsyncStorage } from "@react-native-community/async-storage";
@@ -16,13 +17,17 @@ import SyntaxHighlighter from "react-native-syntax-highlighter";
 import { docco } from "react-syntax-highlighter/styles/hljs";
 
 import LottieView from "lottie-react-native";
+import Toast from "react-native-tiny-toast";
 
 import axios from "axios";
 
 // da popolare
-let authcode = -1;
-let webref = null;
-let modalVisible = false;
+let authcode = -1,
+  RTT = -1,
+  webref = null,
+  modalVisible = false,
+  opacity = new Animated.Value(0),
+  directionMessage = "";
 
 const instance = axios.create({
   //baseURL: "http://10.0.0.116/api",
@@ -37,6 +42,7 @@ class BlocklyPage extends Component {
     super(props);
 
     authcode = props.robotAuthCodeBlockly;
+    RTT = props.RTT;
     navigation = props.navigation;
 
     this.state = {
@@ -71,8 +77,25 @@ class BlocklyPage extends Component {
           //
         })
         .catch(function (e) {
-          //
-          alert("errore: " + e);
+          if (e.response != undefined) {
+            switch (e.response.data.message) {
+              case "RIGHT_OBSTACLES":
+                directionMessage = "a destra.";
+                break;
+              case "LEFT_OBSTACLES":
+                directionMessage = "a sinistra.";
+                break;
+              case "FRONT_OBSTACLES":
+                directionMessage = "in avanti.";
+                break;
+            }
+          }
+
+          Animated.timing(opacity, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }).start();
         });
     } else if (message.id == 1) {
       // get code
@@ -112,7 +135,7 @@ class BlocklyPage extends Component {
         })
         .catch(function (e) {
           //
-          alert("errore: " + e);
+          // alert("errore: " + e);
         });
     } else if (message.id == 3) {
       var data = message.data;
@@ -125,7 +148,7 @@ class BlocklyPage extends Component {
         backupWorkspace(data);
       }
     } else if (message.id >= 4) {
-      alert(message.data);
+      // alert(message.data);
     }
   }
 
@@ -145,6 +168,26 @@ class BlocklyPage extends Component {
             }}
           >
             <View style={styles.modalView}>
+              <Animated.View
+                style={[
+                  {
+                    opacity: opacity,
+                    transform: [
+                      {
+                        scale: opacity.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.85, 1],
+                        }),
+                      },
+                    ],
+                  },
+                  styles.toastContainer,
+                ]}
+              >
+                <Text style={styles.toast}>
+                  Ops, evito ostacolo {directionMessage}
+                </Text>
+              </Animated.View>
               {this.state.codeAnimationVisible ? (
                 <View style={styles.codeAnimationContainer}>
                   {Platform.OS == "android" ? (
@@ -166,7 +209,7 @@ class BlocklyPage extends Component {
               ) : (
                 <SyntaxHighlighter
                   language="javascript"
-                  customStyle={{padding: 20,}}
+                  customStyle={{ padding: 20 }}
                   fontSize={13}
                   //highlighter={"prism" || "hljs"}
                   highlighter="hljs"
@@ -264,7 +307,7 @@ export function getCode() {
 }
 export function runCode() {
   //const js = 'document.getElementById("runcode").click();true;';
-  const js = "window.runCode();true;";
+  const js = "window.RTT=" + RTT + "; window.runCode(); true;";
 
   webref.injectJavaScript(js);
 }
@@ -309,5 +352,29 @@ const styles = StyleSheet.create({
   codeAnimation: {},
   codeImage: {
     flex: 1,
-  }
+  },
+  toastContainer: {
+    position: "absolute",
+    top: 20,
+    width: "100%",
+    height: "auto",
+    alignItems: "center",
+    zIndex: 100,
+    // backgroundColor: "red",
+  },
+  toast: {
+    backgroundColor: "#da2828",
+    color: "#fff",
+    width: "auto",
+    fontSize: 14,
+    padding: 10,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
 });

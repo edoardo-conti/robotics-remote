@@ -21,9 +21,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 
+import * as Animatable from 'react-native-animatable';
+
 import LottieView from "lottie-react-native";
 
-import useInterval from '@use-it/interval';
+import useInterval from "@use-it/interval";
 
 import axios from "axios";
 import BlocklyPage, { getCode, runCode } from "./BlocklyPage";
@@ -62,8 +64,10 @@ export function HomeScreen({ navigation }) {
   const [isConnLoading, setConnLoading] = useState(false);
   // refresh
   const [refreshing, setRefreshing] = React.useState(false);
-  // timer
+  // timer Round Trip Time
   const [isTimerRunning, setIsTimerRunning] = useState(true);
+  const [pingCounter, setPingCounter] = useState(0);
+  const [RTT, setRTT] = useState(500);
 
   //const onRefresh = React.useCallback(() => {
   function onRefresh() {
@@ -119,7 +123,7 @@ export function HomeScreen({ navigation }) {
   };
 
   function connectRobot() {
-    // attivo icona caricamento
+    // attivo caricamento
     setConnLoading(true);
 
     instance
@@ -136,10 +140,12 @@ export function HomeScreen({ navigation }) {
           };
           var jsonValue = JSON.stringify(json_data);
 
+          // store data
           writeItemToStorage(jsonValue);
-
           // load sensors (todo)
           getRobotInfo(response.data.auth);
+          // start timer ping
+          setIsTimerRunning(true);
         }
       })
       .catch(function (error) {
@@ -186,6 +192,7 @@ export function HomeScreen({ navigation }) {
   function disconnectRobot() {
     // debugging
     deleteItemFromStorage();
+    setIsTimerRunning(false);
 
     instance
       .get("/disconnect?auth=" + robotAuthCode)
@@ -193,11 +200,14 @@ export function HomeScreen({ navigation }) {
         if (response.data.status == "DISCONNECTED") {
           // alert(response.data.message);
 
+          // pulizia storage
           deleteItemFromStorage();
+          // stop timer ping
+          setIsTimerRunning(false);
 
           // play animazione login
-          if(Platform.OS != 'android') {
-            this.animation.play(0,160);
+          if (Platform.OS != "android") {
+            this.animation.play(0, 160);
           }
         }
       })
@@ -228,6 +238,7 @@ export function HomeScreen({ navigation }) {
     // todo: check navigation.jumpTo('Profile', { owner: 'Michaś' });
     navigation.navigate("Blockly", {
       robotAuthCodeBlockly: robotAuthCode,
+      RTT: RTT,
     });
 
     // controllo che la modalità non sia già stata impostata precedentemente
@@ -294,41 +305,64 @@ export function HomeScreen({ navigation }) {
         setRobotMovement(direction);
       })
       .catch(function (error) {
-        //
+        // wobble robot sprite 
+        this.wobble();
       });
   }
 
-  useInterval(() => {
-    
-    // TODO: timer per controllo connessione con robot
-    if(isRobotConnected == true) {
-      instance
-      .post('/ping?auth=' + robotAuthCode)
-      .then(function (response) {
-        //
-        // alert('pong');
-      })
-      .catch(function (error) {
-        //
-        setIsTimerRunning(false);
-        Alert.alert(
-          "Connessione con unità Robot persa",
-          "Vuoi riconnetterti? ",
-          [
-            {
-              text: "No",
-              onPress: () => disconnectRobot(),
-              style: "cancel",
-            },
-            { text: "Si", 
-            onPress: () => connectRobot() },
-          ],
-          { cancelable: false }
-        );
-      });
-    }
-    
-  }, isTimerRunning ? 8000 : null);
+  const d = new Date();
+  useInterval(
+    () => {
+      // TODO: timer per controllo connessione con robot
+      if (isRobotConnected == true) {
+        // start
+        let startTime = Date.now();
+
+        instance
+          .post("/ping?auth=" + robotAuthCode, {
+            timeout: 3000,
+          })
+          .then(function (response) {
+            // incremento counter ping
+            setPingCounter((currentCount) => currentCount + 1);
+
+            // calc RTT
+            let now = Date.now(),
+              seconds = 1e3 * Math.floor((now - startTime) / 1e3).toFixed(0),
+              milliseconds = Math.floor((now - startTime) % 1e3),
+              currentRTT = seconds + milliseconds;
+
+            // se maggiore, nuovo massimo valore
+            if (currentRTT > RTT) {
+              setRTT(currentRTT);
+            }
+          })
+          .catch(function (error) {
+            // TODO: verificare se corretto farlo ->
+            setIsTimerRunning(false);
+            
+            Alert.alert(
+              "Connessione con unità Robot persa",
+              "Vuoi riconnetterti? ",
+              [
+                {
+                  text: "No",
+                  onPress: () => { 
+                    disconnectRobot(); 
+                    // TODO: verificare se corretto farlo ->
+                    navigation.navigate("Home"); 
+                  },
+                  style: "cancel",
+                },
+                { text: "Si", onPress: () => connectRobot() },
+              ],
+              { cancelable: false }
+            );
+          });
+      }
+    },
+    isTimerRunning ? 15000 : null
+  );
 
   useFocusEffect(
     React.useCallback(() => {
@@ -348,11 +382,14 @@ export function HomeScreen({ navigation }) {
     readItemFromStorage();
 
     //this.animation.play();
-    if(!isRobotConnected && Platform.OS != 'android') {
-      this.animation.play(0,160);
+    if (!isRobotConnected && Platform.OS != "android") {
+      this.animation.play(0, 160);
     }
-    
   }, []);
+
+  robotSpriteRef = ref => this.spriteRobot = ref;
+
+  wobble = () => this.spriteRobot.wobble(500);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -365,15 +402,11 @@ export function HomeScreen({ navigation }) {
           }
         >
           {isRobotConnected ? /*<PostHeader />*/ null : null}
-          <LinearGradient
-            //colors={["#fea735", "#fe7235"]}
-            //colors={["#ff6532", "#ffab24"]}
-            colors={["#ffab24", "#ff6532"]}
-            //start={{ x: 0, y: 1 }}
-            //end={{ x: 1, y: 1 }}
-            start={[0.0, 0.1]}
-            end={[0.0, 0.5]}
-            style={styles.mainLineaGradient}
+
+          <ImageBackground
+            source={require("./assets/test.jpg")}
+            style={styles.mainBackgroundPalette}
+            resizeMode="stretch"
           >
             <View style={styles.viewRobot}>
               {robotOPmode != 0 ? (
@@ -413,7 +446,7 @@ export function HomeScreen({ navigation }) {
                   />
                 </TouchableWithoutFeedback>
                 {robotMovement == "stop" ? (
-                  <Image source={sprites.robot} style={styles.robotSprite} />
+                  <Animatable.Image source={sprites.robot} ref={this.robotSpriteRef} style={styles.robotSprite} />
                 ) : null}
                 {robotMovement == "forward" ? (
                   <Image
@@ -459,7 +492,7 @@ export function HomeScreen({ navigation }) {
                 />
               </TouchableWithoutFeedback>
             </View>
-          </LinearGradient>
+          </ImageBackground>
 
           <View style={styles.viewOptions}>
             <View style={styles.batteryView}>
@@ -596,8 +629,10 @@ export function HomeScreen({ navigation }) {
               onPress={connectRobot}
             >
               <Text style={styles.connectButtonText}>
-              {isConnLoading ? 'Connessione in corso...' : 'Connettiti al Robot'}
-                </Text>
+                {isConnLoading
+                  ? <ActivityIndicator color="#fff" />
+                  : "Connettiti al Robot"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -607,7 +642,7 @@ export function HomeScreen({ navigation }) {
 }
 
 export function BlocklyScreen({ route, navigation }) {
-  const { robotAuthCodeBlockly } = route.params;
+  const { robotAuthCodeBlockly, RTT } = route.params;
 
   // cambio settings Stack.Navigator
   navigation.setOptions({
@@ -618,6 +653,7 @@ export function BlocklyScreen({ route, navigation }) {
   return (
     <BlocklyPage
       robotAuthCodeBlockly={robotAuthCodeBlockly}
+      RTT={RTT}
       navigation={navigation}
     />
   );
@@ -630,6 +666,23 @@ export function areaCoverageScreen({ route, navigation }) {
   navigation.setOptions({
     headerLargeTitle: false,
     headerHideShadow: false,
+  });
+
+  React.useEffect(() => {
+    //alert();
+    navigation.addListener("beforeRemove", (e, robotOPmode, robotAuthCode) => {
+      if (robotOPmode != -1) {
+        instance
+          .post("/setmode?op=-1&auth=" + robotAuthCode)
+          .then(function (response) {
+            setrobotOPmode(-1); // Void
+          })
+          .catch(function (error) {
+            // todo
+          });
+      }
+    }),
+      [navigation];
   });
 
   return <SwiperComponent robotAuthCodeAlgs={robotAuthCodeAlgs} />;
@@ -687,10 +740,11 @@ const styles = StyleSheet.create({
     //width: "100%",
     height: 50,
   },
-  mainLineaGradient: {
+  mainBackgroundPalette: {
     //flex: 1,
     //borderRadius: 15
-    paddingBottom: 40,
+    paddingBottom: 30,
+    paddingTop: 15,
   },
   scrollView: {
     //flex: 1,
@@ -769,12 +823,13 @@ const styles = StyleSheet.create({
   enableRemoteControl: {
     position: "absolute",
     width: "100%",
-    height: 300,
+    height: 355,
     //backgroundColor: "rgba(0,0,0,.5)",
     //backgroundColor: "#ff6532",
     alignItems: "center",
     zIndex: 100,
     justifyContent: "center",
+    top: -25,
   },
   enableRemoteControlButton: {
     backgroundColor: "white",
@@ -937,9 +992,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     padding: 40,
     //backgroundColor: "green",
-    justifyContent: "center"
+    justifyContent: "center",
   },
-  viewLoggedOutAnimation: {
-    
-  }
+  viewLoggedOutAnimation: {},
 });

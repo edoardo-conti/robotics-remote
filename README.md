@@ -32,7 +32,7 @@ Batteria (10.5-12.6V) | Regolatore DC-DC (8V) | Arduino (3.3V) | Arduino (5V)
 
 Per dotare la scheda Arduino di storage permanente si è installato un lettore di schede microSD il quale ha richiesto, dato il diverso microcontrollore dalla SBC classica Arduino Uno, l'impiego dell'header ICSP. Grazie a questa aggiunta è possibile salvare in modo permanente e consistente i parametri di connettività alla rete WiFi.
 
-Per limitare il rumore nelle letture dei sensori IR si è stabilizzato la linea d'alimentazione con un filtro di 2 condensatori tra linea e GND (100µF e 100nF) e 1 resistore nel pin del segnale in uscita. Purtroppo questi due prodotti sono risultati eccessivamente rumorosi ed inclini a generari segnali peak, il quale implicano un numero importante di falsi positivi. Per una futura rivisitazione (state of the art) del progetto sarebbe opportuno valutare moduli LIDAR (Time-Of-Flight).
+Per limitare il rumore nelle letture dei sensori IR si è stabilizzato la linea d'alimentazione con un filtro di 2 condensatori tra linea e GND (100µF e 100nF) e 1 resistore nel pin del segnale in uscita. Purtroppo questi due prodotti sono risultati eccessivamente rumorosi ed inclini a generari segnali peak, il quale implicano un numero importante di falsi positivi. Per una futura rivisitazione (state of the art) del progetto sarebbe opportuno valutare moduli LIDAR (Time-Of-Flight). (sorgente: https://www.robotshop.com/community/forum/t/how-to-improve-sharp-gp2dxxx-sensors/12989)
 
 ------------------------------------------
 
@@ -125,9 +125,11 @@ Per assicurare un funzionamento controllato è stato implementato un *watchdog* 
 
 ## Applicativo ##
 
-Per realizzare l'App dedicata all'interazione con il robot si è sposata la tecnologia **React Native**, un potente e moderno framework mantenuto da Facebook assieme ad una ricca community per scrivere applicazioni native utilizzando React.
+Per realizzare l'App dedicata all'interazione con il robot si è sposata la tecnologia **React Native (RN)**, un potente e moderno framework mantenuto da Facebook assieme ad una ricca community per scrivere applicazioni native utilizzando React.
 
-Come piattaforma di sviluppo si è sfruttato **Expo**, un set di strumenti e servizi costruiti e pensati attorno a React Native e piattaforme native che semplificano lo sviluppo, build e deploy di app iOS, Android e Web App dalla stessa sorgente di codice JavaScript/TypeScript.
+Come piattaforma di sviluppo si è sfruttato **Expo**, un set di strumenti e servizi costruiti e pensati attorno a React Native e piattaforme native che semplificano lo sviluppo, build e deploy di app iOS, Android e Web App a partire dalla stessa sorgente di codice JavaScript/TypeScript.
+
+### Sviluppare App native con Expo ###
 
 Per installare gli strumenti da linea di comando Expo:
 
@@ -137,3 +139,60 @@ E successivamente per inizializzare il progetto:
 
 `expo init robotics-remote`
 
+L'applicazione è stata sviluppata per essere cross-platform e quindi disponibile sia per iOS che Android. I requisiti minimi richiedono una versione di Android 5+ e di iOS 10+ . Expo prevede due diversi approcci per creare applicazioni: Workflow Managed o Bare.
+Il workflow Managed permette di scrivere app native utilizzando solamente JavaScript/TypeScript, gli strumenti e servizi Expo si occupano di tutto il resto a basso livello per le piattaforme native. Infatti per sfruttare funzionalità native dei dispositivi si utilizza l'SDK Expo e le librerie offerte dalla community.
+Invece con il workflow Bare si ha pieno accesso ad ogni aspetto di un progetto nativo a discapito della mancanza di diversi servizi Expo.
+Non avendo particolari necessità si è optato per un workflow Managed assicurandosi un pieno supporti ai servizi Expo. Tale scelta è motivata anche dal fatto che se in futuro fosse stato necessario scrivere del codice nativo o implementare librerie native sarebbe stato comunque possibile farlo grazie al comando `expo eject`. Quest'ultimo genera 2 directory *ios* e *android* rispettivamente per ogni sistema operativo contententi il progetto nativo. Sarebbe bastato quindi aprire le cartelle con Xcode o Android Studio e proseguire lo sviluppo con l'ambiente di sviluppo nativo.
+
+Lo sviluppo risulta essere estremamente lineare grazie agli strumenti a disposizione, così da concentrarsi unicamente sul prodotto da realizzare senza perdere tempo dietro a problemi derivanti dall'ambiente di sviluppo. E' possibile consultare constantemente il progetto aprendolo all'interno dell'App Expo disponibile sia per iOS e Android che funge da client, nel proprio web browser oppure in un simulatore installato localmente nella macchina (quest'ultima opzione richieste Xcode / Android Studio in base al dispositivo che si desidera emulare).
+
+Per installare moduli aggiuntivi è sufficiente il comando `expo install <nome_modulo>` il quale sfrutta il package manager *yarn* per la gestione dei pacchetti.
+
+Una volta giunti ad un checkpoint nella timeline del progetto è possibile pubblicare l'applicazione all'interno dei servizi Expo per condividerla con altri utenti.
+Il comando dedicato è `expo publish` il quale comprimerà il codice, effettuerà il build del bundle Javascript generando 2 versioni del codice (una per iOS l'altra per Android) e le caricherà assieme a tutti gli assets su una Content Delivery Network (CDN).
+L'utente che tenterà di accedere all'app tramite il client Expo riceverà la versione adeguata in base alla versione dell'SDK Expo impiegato, piattaforma e canale di rilascio. Quest'ultima funzionalità è molto utile per condividere versioni dell'applicativo con differenti configurazioni per diversi utenti. Ad esempio in questo caso è stato utile creare un canale `standalone` per distribuire una versione dell'applicazione indipendente, quindi fruibile senza necessario bisogno di connettersi fisicamente al robot.
+
+Per ultimo, per compilare il progetto e generare le rispettive applicazioni native è sufficiente il comando `expo build:[ios/android]`. Per iOS è necessario essere registrati al programma *Apple Developers* ed autenticarsi con le proprie credenziali da sviluppatore. Per Android è sufficiente il fetch del keystore ed il build è gratuito.
+
+### Panoramica App Nativa ###
+L'applicazione si presenta con una schermata iniziale che richiede di connettersi al robot per poterlo controllare. Si ricorda che è necessario che sia lo smartphone che robot siano collegati alla stessa rete WiFi. Premuto il bottone di connessione, l'app invierà una richiesta HTTP `POST /api/connect` al robot e se questo non è collegato a nessun altro dispositivo accetterà la richiesta e restituirà il codice autenticativo, necessario per inoltrare le richieste future.
+
+La schermata quindi passarà alla dashboard dove, come prima opzione, sarà possibile controllare il robot inviando comandi di spostamento movimento in avanti, indietro, ruota a sinistra o destra. Appena connesso, il robot non attiva l'algoritmo di prevenzione degli ostacoli per evitare movimenti bruschi dovuti ad un ambiente non ancora idoneo, ma verrà attivato immediatamente dopo la prima richiesta di movimento, o meglio prima di risolvere la prima richiesta di movimento.
+
+Quindi durante l'intero periodo di attività, il software del robot sarà constantemente all'allerta di ostacoli per un funzionamento in totale sicurezza. Nel caso in cui si richieda uno spostamento il quale però non risulti essere disponibile in quanto causerebbe un ostacolo all'interno della "bolla" del robot, un'animazione avverità di tale rilevazione. 
+
+Scorrendo l'applicazione, più sotto è possibile consultare le condizioni d'alimentazione che mostrano tensione della batteria e livello stimato di carica.
+
+Successivamente sono presenti due bottoni che permettono di accedere alle funzionalità principali dell'applicativo: 
+- **Blockly**, per un approccio al robot con paradigma di programmazione a blocchi
+- **Modalità Esplorazione**, per avviare algoritmi di massima copertura di un'area ed osservare i diversi comportamenti
+
+In fondo, come ultima opzione, il bottone per disconnettersi dal robot e lasciarlo libero per un'eventuale nuova connessione.
+
+### Programmazione a blocchi per istruire il Robot ###
+In questa sezione dell'App è possibile approcciarsi al mondo della programmazione a blocchi per istruire il robot con svariati comandi a disposizione sfruttando **Blockly**. Blockly è una raccolta di librerie per la creazione di linguaggi ed editor di programmazione visiva basati su blocchi. È un progetto di Google ed è un software gratuito e open source rilasciato sotto licenza Apache 2.0 .
+
+Purtroppo, dato il mancato supporto alle librerie js come assets Android, non è stato possibile implementare tale servizio in locale. Per ovviare al problema si è deciso di ospitare il codice sorgente della pagina Blocky su *Fast.io* , una piattaforma moderna di file hosting. La pagina web principale (`index.html`) è caricata nell'App sfruttando il componente `WebView` di React Native. Qui nasce un ulteriore problema, più nello specifico un ostacolo a livello di networking. Infatti la rete del robot e della pagina da dove è caricato Blockly sono, per ovvie ragioni, differenti e quindi risulterà impossibile inviare richieste HTTP al web server Arduino per controllare il robot. La soluzione che è stata adotatta è resa disponibile direttamente dal componente WebView il quale espone metodi di comunicazione tra RN e pagina web caricata attraverso l'injection di metodi Javascript nella pagina destinazione. Ecco quindi che è possibile chiamare dal codice sorgente Javascript di Blockly da dominio fast.io funzioni come `window.ReactNativeWebView.postMessage()` il quale inviano appunto messaggi all'applicativo React Native intercettabili tramite *prop* dedicato (`onMessage`) del componente. Il workaround appena introdotto è sfruttato per inviare messaggi che richiedono l'invio di determinate richieste HTTP da parte dell'App che ovviamente si trova nella stessa rete del robot. Facile intuire quindi che l'esecuzione del codice del workspace generato tramite Blockly riguardo all'inoltro di comandi al robot si traducono in chiamate `window.ReactNativeWebView.postMessage(<json_richiesta_http>)` dove come parametro viene passato del JSON che includa l'URL della richiesta HTTP ed eventuali parametri come ad esempio il delay di uno spostamento. 
+
+L'interfaccia vanta di una toolbar dal quale. 
+Purtroppo, dato il mancato supporto alle librerie js come assets Android, non è stato possibile implementare tale servizio in locale. Per ovviare al problema si è deciso di ospitare il codice sorgente della pagina Blocky su *Fast.io* , una piattaforma moderna di file hosting. La pagina web principale (`index.html`) è caricata nell'App sfruttando il componente `WebView` di React Native. Qui nasce un ulteriore problema, più nello specifico un ostacolo a livello di networking. Infatti la rete del robot e della pagina da dove è caricato Blockly sono, per ovvie ragioni, differenti e quindi risulterà impossibile inviare richieste HTTP al web server Arduino per controllare il robot. La soluzione che è stata adotatta è resa disponibile direttamente dal componente WebView il quale espone metodi di comunicazione tra RN e pagina web caricata attraverso l'injection di metodi Javascript nella pagina destinazione. Ecco quindi che è possibile chiamare dal codice sorgente Javascript di Blockly da dominio fast.io funzioni come `window.ReactNativeWebView.postMessage()` il quale inviano appunto messaggi all'applicativo React Native intercettabili tramite *prop* dedicato (`onMessage`) del componente. Il workaround appena introdotto è sfruttato per inviare messaggi che richiedono l'invio di determinate richieste HTTP da parte dell'App che ovviamente si trova nella stessa rete del robot. Facile intuire quindi che l'esecuzione del codice del workspace generato tramite Blockly riguardo all'inoltro di comandi al robot si traducono in chiamate `window.ReactNativeWebView.postMessage(<json_richiesta_http>)` dove come parametro viene passato del JSON che includa l'URL della richiesta HTTP ed eventuali parametri come ad esempio il delay di uno spostamento. 
+
+L'interfaccia vanta di una toolbar dal quale è possibile scegliere e posizione all'interno del workspace blocchi funzionali divisi per categorie d'appartenenza. Al momento sono disponibili blocchi delle seguenti categorie: Logic, Loops, Math, Text, *Robot*(custom) e Variables.
+Per posizionare un blocco all'interno del workspace è sufficiente aprire la categoria interessata, selezionare il blocco e trascinarlo all'interno del workspace per poi rilasciare la pressione. Lo spazio è stato configurato per allineare blocchi ad una griglia fantasma in modo da offrire uno "snap" ordinato dei blocchi. Nella parte superiore destra si trova il cestino, dove è possibile trascinare blocchi o insieme di blocchi non più necessari per rimuoverli dallo spazio di lavoro (se cliccato è possibile accedere ai blocchi nel cestino per recuperarli). Subito più sotto comandi per gestire lo zoom del workspace per adattarsi alle dimensioni di questo, sono disponibili: zoom in, zoom out e zoom adattivo in base ai blocchi.
+
+Di seguito i blocchi disponibili nella categoria custom Robot:
+- Avanti/Indietro per <x>s
+- Rotazione sinistra/destra per <x>(s|°) 
+- Lettura sensore frontale (sinistro/destro) o laterale (sinistro/destro)
+- Impostazione velocità a <x> (1 <= x <= 5)
+- Attendere <x>s
+    
+Nella barra di navigazione dell'applicazione, a destra sono presenti 2 bottoni per generare il codice dal workspace (build) oppure il menù opzioni (options). Quest'ultimo permette di ricaricare la pagina Blockly oppure pulire il workspace con un semplice tap.
+
+Premendo il bottone con l'icona di un martello (build), a patto che il workspace non sia vuoto, verrà generato il codice Javascript e presentato attraverso un *Modal*. Il codice verrà stampato all'interno di un Syntax Highlighter, il quale appunto, formatterà il codice a dovere ed applicherà degli stili per una consultazione facilitata e più chiara. Se sufficiente si potrà chiudere il Modal attraverso il semplice tasto dedicato (Chiudi) oppure eseguire il codice in questione attraverso il tasto "Esegui Codice". L'esecuzione del codice Javascript è resa possibile grazie alla funzione nativa `eval()`. Qualora il codice preveda la comunicazione con il robot, casistica altamente probabile, le richieste HTPP verranno inoltrate seguendo il workaround più sopra descritto. 
+
+Come durante il Controllo Remoto, nel caso in cui il robot incontri degli ostacoli durante gli spostamenti invocati dai comandi generati dai blocchi, si occuperà di evitarli in totale sicurezza riprendendo poi l'esecuzione del codice corrente.
+
+Quando si abbandonerà la schermata Blockly, il workspace corrente verrà automaticamente salvato in locale nell'applicazione per poi essere recuperato ad ogni nuovo  accesso alla sezione in questione.
+
+### Panoramica Algoritmi di Area Coverage ###

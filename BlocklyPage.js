@@ -68,6 +68,7 @@ class BlocklyPage extends Component {
     var message = JSON.parse(event.nativeEvent.data);
 
     if (message.id == 0) {
+      /*
       // motors requests
       var httpreq = message.url + "&auth=" + authcode;
 
@@ -97,6 +98,7 @@ class BlocklyPage extends Component {
             useNativeDriver: true,
           }).start();
         });
+        */
     } else if (message.id == 1) {
       // get code
       var code = message.code;
@@ -120,6 +122,11 @@ class BlocklyPage extends Component {
     } else if (message.id == 2) {
       // getDistance()
 
+      const run = "window.sensorValue=100;true;";
+
+      webref.injectJavaScript(run);
+
+      /*
       var httpreq = "/sensors/" + message.sensor + "?auth=" + authcode;
 
       instance
@@ -137,6 +144,7 @@ class BlocklyPage extends Component {
           //
           // alert("errore: " + e);
         });
+        */
     } else if (message.id == 3) {
       var data = message.data;
 
@@ -307,7 +315,7 @@ export function getCode() {
 }
 export function runCode() {
   //const js = 'document.getElementById("runcode").click();true;';
-  const js = "window.RTT=" + RTT + "; window.runCode(); true;";
+  const js = "window.RTT=300; window.runCode(); true;";
 
   webref.injectJavaScript(js);
 }

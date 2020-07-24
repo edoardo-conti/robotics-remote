@@ -73,9 +73,9 @@ export function HomeScreen({ navigation }) {
   function onRefresh() {
     setRefreshing(true);
 
-    getRobotInfo(robotAuthCode).then(function (response) {
-      setRefreshing(false);
-    });
+    getRobotInfo(robotAuthCode);
+    
+    setRefreshing(false);
 
     //wait(2000).then(() => setRefreshing(false));
   }
@@ -126,6 +126,21 @@ export function HomeScreen({ navigation }) {
     // attivo caricamento
     setConnLoading(true);
 
+    var json_data = {
+      connected: true,
+      authcode: 9999,
+    };
+    var jsonValue = JSON.stringify(json_data);
+
+    // store data
+    writeItemToStorage(jsonValue);
+    // load sensors (todo)
+    getRobotInfo(9999);
+
+    // termino caricamento
+    setConnLoading(false);
+
+    /*
     instance
       .get("/connect", {
         timeout: 4000, // timeout maggiore per il tempo di connessione all'unità robot
@@ -183,6 +198,8 @@ export function HomeScreen({ navigation }) {
         setConnLoading(false);
       });
 
+      */
+
     // debug (todo)
     // da rimuovere, utilizzato per entrare in grafica senza conferma http
     //setrobotAuthCode(-1);
@@ -192,8 +209,8 @@ export function HomeScreen({ navigation }) {
   function disconnectRobot() {
     // debugging
     deleteItemFromStorage();
-    setIsTimerRunning(false);
 
+    /*
     instance
       .get("/disconnect?auth=" + robotAuthCode)
       .then(function (response) {
@@ -216,9 +233,15 @@ export function HomeScreen({ navigation }) {
           //alert(error.response.data.message);
         }
       });
+      */
+
   }
 
   function getRobotInfo(authcode) {
+    setBattery({'voltage': 12600, 'level': 100});
+    setBattLoading(false);
+
+    /*
     return instance
       .get("/sensors/battery?auth=" + authcode)
       .then(function (response) {
@@ -232,6 +255,7 @@ export function HomeScreen({ navigation }) {
       .catch(function (error) {
         //alert("errore recupero info batteria robot");
       });
+      */
   }
 
   function gotoBlockly() {
@@ -287,6 +311,8 @@ export function HomeScreen({ navigation }) {
   }
 
   function motorMove(direction) {
+    setRobotMovement(direction);
+    /*
     var urlReq = "/motors/";
 
     switch (direction) {
@@ -308,8 +334,10 @@ export function HomeScreen({ navigation }) {
         // wobble robot sprite 
         this.wobble();
       });
+      */
   }
 
+  /*
   const d = new Date();
   useInterval(
     () => {
@@ -363,6 +391,7 @@ export function HomeScreen({ navigation }) {
     },
     isTimerRunning ? 15000 : null
   );
+  */
 
   useFocusEffect(
     React.useCallback(() => {
@@ -697,12 +726,14 @@ export function runCodeBlockly() {
 }
 
 export function networkErrorAlert() {
+  /*
   Alert.alert(
     "Impossibile completare l'operazione",
     "Verificare la connessione alla rete",
     [{ text: "OK" }],
     { cancelable: true }
   );
+  */
 }
 
 function Separator() {
@@ -980,11 +1011,15 @@ const styles = StyleSheet.create({
   viewLoggedOut: {
     flex: 1,
     backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
     //backgroundColor: "red",
   },
   viewLoggedOutAnim: {
-    flex: 5,
+    flex: 4,
     justifyContent: "center",
+    alignItems: "center",
+    width: "80%",
     //backgroundColor: "blue",
   },
   viewLoggedOutButton: {

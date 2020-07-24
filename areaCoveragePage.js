@@ -371,6 +371,7 @@ export default class SwiperComponent extends Component {
   };
 
   runExploring = (algorithm) => {
+    /*
     // http request
     instance
       .post("/setmode?op=" + algorithm + "&auth=" + this.state.authcode)
@@ -385,9 +386,12 @@ export default class SwiperComponent extends Component {
           { cancelable: true }
         );
       });
+      */
+     this.setState({ viewInLoading: -1 });
   };
 
   stopExploring = (mode) => {
+    /*
     // http request
     instance
       .post("/setmode?op=-1&auth=" + this.state.authcode)
@@ -399,7 +403,8 @@ export default class SwiperComponent extends Component {
           { cancelable: true }
         );
       });
-
+      */
+     
     // unlock
     this.setState({
       swiperScrollEnabled: true,

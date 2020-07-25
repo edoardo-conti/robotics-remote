@@ -3,6 +3,7 @@
 ## Introduzione ##
 
 Progetto finalizzato alla realizzazione di un robot controllabile da remoto e programmabile in totale sicurezza tramite paradigma di programmazione a blocchi.
+* **Autore: Edoardo Conti [278717]**
 
 ------------------------------------------
 
@@ -33,6 +34,9 @@ Batteria (10.5-12.6V) | Regolatore DC-DC (8V) | Arduino (3.3V) | Arduino (5V)
 Per dotare la scheda Arduino di storage permanente si è installato un lettore di schede microSD il quale ha richiesto, dato il diverso microcontrollore dalla SBC classica Arduino Uno, l'impiego dell'header ICSP. Grazie a questa aggiunta è possibile salvare in modo permanente e consistente i parametri di connettività alla rete WiFi.
 
 Per limitare il rumore nelle letture dei sensori IR si è stabilizzato la linea d'alimentazione con un filtro di 2 condensatori tra linea e GND (100µF e 100nF) e 1 resistore nel pin del segnale in uscita. Purtroppo questi due prodotti sono risultati eccessivamente rumorosi ed inclini a generari segnali peak, il quale implicano un numero importante di falsi positivi. Per una futura rivisitazione (state of the art) del progetto sarebbe opportuno valutare moduli LIDAR (Time-Of-Flight). (sorgente: https://www.robotshop.com/community/forum/t/how-to-improve-sharp-gp2dxxx-sensors/12989)
+
+Di seguito le schematiche del circuito elettrico prodotte con KiCad:
+![kicad_schematics](https://i.imgur.com/KBY2GHU.png)
 
 ------------------------------------------
 

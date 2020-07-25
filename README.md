@@ -10,13 +10,13 @@ Progetto finalizzato alla realizzazione di un robot controllabile da remoto e pr
 
 Di seguito la componentistica principale dell'hardware del robot:
 
-- Il microcontrollore impiegato è un **Arduino UNO WiFi Rev2** che differisce dalla versione classica per il nuovo microchip *ATmega4809* (il classico Arduino UNO R3 è coadiuvato da microcontrollore *ATmega328*) e la dotazione di un modulo SoC con integrato uno stack TCP/IP completo il quale può offrire accesso ad una rete WiFi oppure agire come Access Point. 
-- ~~La scelta della ventola d'aspirazione, dopo svariate valutazioni, è ricaduta sul seguente modello: AVC BA10033B12S da 12V 2.85A . L'assorbimento si attesta attorno ai ~34W ed è più che accettabile per assicurare un'autonomia al robot di circa 45min~~ *(al momento ventola NON più impiegata per nuovo concept del progetto).*
-- ~~Il circuito per gestire la ventola è basato su MOSFET IRL7833PBF con rating 30V e 150A, più che sufficiente per reggere il carico elettrico richiesto~~ *(vedi punto sopra).*
+- Il microcontrollore impiegato è un **Arduino UNO WiFi Rev2** che differisce dalla versione classica per il nuovo chip *ATmega4809* (il classico *Arduino UNO R3* è coadiuvato da microcontrollore *ATmega328*) e la dotazione di un modulo SoC con integrato uno stack *TCP/IP* completo il quale può offrire accesso ad una rete WiFi oppure agire come Access Point. 
+- ~~La scelta della ventola d'aspirazione, dopo svariate valutazioni, è ricaduta sul seguente modello: AVC BA10033B12S da 12V 2.85A . L'assorbimento si attesta attorno ai 34W ed è più che accettabile per assicurare un'autonomia al robot di circa 45min~~ *(al momento ventola NON più impiegata per nuovo concept del progetto).*
+- ~~Il circuito per gestire la ventola è basato su [MOSFET IRL7833PBF](https://www.infineon.com/dgdl/irl7833pbf.pdf?fileId=5546d462533600a4015356600d71257b) con rating 30V e 150A, più che sufficiente per reggere il carico elettrico richiesto~~ *(vedi punto sopra).*
 - Gli spostamenti sono assicurati da due motori [Micro Metal Gearmotor HPCB 6V](https://www.pololu.com/product/3079) con ratio 298:1 .
 - I servomotori sono gestiti da due driver [DRV8838](https://www.pololu.com/product/2990), uno per ogni motore per assicurare un'erogazione continua massima di 1.7A (peak = 1.8A) in 0-11V.
 - Per la rilevazione di ostacoli, il robot vanta di un'array di 4 sensori di prossimità Sharp IR: 2 frontali con range di sensibilità 4-30cm ([GP2Y0A41SK0F](https://global.sharp/products/device/lineup/data/pdf/datasheet/gp2y0a41sk_e.pdf)) e 2 laterali con range di sensibilità 2-15cm ([GP2Y0A51SK0F](https://global.sharp/products/device/lineup/data/pdf/datasheet/gp2y0a51sk_e.pdf)). Nell'eventualità di un fallimento dei sensori nel rilevare ostacoli, nella parte frontale centrale del robot è presente un microswitch a levetta che funge da bumper.
-- L'alimentazione è assicurata da una batteria LiPo "ZIPPY Compact" da 1300mAh da 12V (3S). La misurazione del livello di carica è realizzata con un semplice cirucito "voltage divider", la tensione in uscita è letta da pin analogico Arduino.
+- L'alimentazione è assicurata da una batteria LiPo "ZIPPY Compact" da 1300mAh da 12V (3S). La misurazione del livello di carica è realizzata con un partitore di tensione, un tipo di circuito costituito da due o più componenti passivi collegati in serie ai capi dei quali, se viene applicata una tensione, essa si ripartirà sulle stesse componenti in base al loro valore. Questo renderà possibile leggere la tensione d'alimentazione tramite pin analogico accertandosi che il segnale rientri tra la `Vref (5V)` di Arduino in modo da non danneggiare la scheda. 
 - La struttura è stata stampanta in 3D con materiale PETG per una buona resistenza agli urti rispetto ad eventualmente un classico PLA. Il modello misura 21x21x6.5cm e sono state necessarie circa 18 ore per completare la stampa ad una velocità di 50mm/s con una Anet A8. (Crediti: [Cesar Nieto](https://www.thingiverse.com/cesnietor/designs))
 
 Si era optato l'impiego di un paio di [encoder magnetici](https://www.pololu.com/product/3081) per calcolare con precisione le rotazioni dei servomotori ma purtroppo non è stato possibile sfruttarli, causa malfunzionamento di un componente.
@@ -181,18 +181,22 @@ L'interfaccia vanta di una toolbar dal quale è possibile scegliere e posizione 
 Per posizionare un blocco all'interno del workspace è sufficiente aprire la categoria interessata, selezionare il blocco e trascinarlo all'interno del workspace per poi rilasciare la pressione. Lo spazio è stato configurato per allineare blocchi ad una griglia fantasma in modo da offrire uno "snap" ordinato dei blocchi. Nella parte superiore destra si trova il cestino, dove è possibile trascinare blocchi o insieme di blocchi non più necessari per rimuoverli dallo spazio di lavoro (se cliccato è possibile accedere ai blocchi nel cestino per recuperarli). Subito più sotto comandi per gestire lo zoom del workspace per adattarsi alle dimensioni di questo, sono disponibili: zoom in, zoom out e zoom adattivo in base ai blocchi.
 
 Di seguito i blocchi disponibili nella categoria custom Robot:
-- Avanti/Indietro per <x>s
-- Rotazione sinistra/destra per <x>(s|°) 
+- Avanti/Indietro per `X`s
+- Rotazione sinistra/destra per `X`(s|°) 
 - Lettura sensore frontale (sinistro/destro) o laterale (sinistro/destro)
-- Impostazione velocità a <x> (1 <= x <= 5)
-- Attendere <x>s
+- Impostazione velocità a `X` (1 <= `X` <= 5)
+- Attendere `X`s
     
-Nella barra di navigazione dell'applicazione, a destra sono presenti 2 bottoni per generare il codice dal workspace (build) oppure il menù opzioni (options). Quest'ultimo permette di ricaricare la pagina Blockly oppure pulire il workspace con un semplice tap.
+Nella barra di navigazione dell'applicazione, a destra sono presenti 2 bottoni: uno per generare il codice dal workspace (build) l'altro per aprire il menù opzioni (options). Quest'ultimo permette di ricaricare la pagina Blockly oppure pulire il workspace con un semplice tap.
 
-Premendo il bottone con l'icona di un martello (build), a patto che il workspace non sia vuoto, verrà generato il codice Javascript e presentato attraverso un *Modal*. Il codice verrà stampato all'interno di un Syntax Highlighter, il quale appunto, formatterà il codice a dovere ed applicherà degli stili per una consultazione facilitata e più chiara. Se sufficiente si potrà chiudere il Modal attraverso il semplice tasto dedicato (Chiudi) oppure eseguire il codice in questione attraverso il tasto "Esegui Codice". L'esecuzione del codice Javascript è resa possibile grazie alla funzione nativa `eval()`. Qualora il codice preveda la comunicazione con il robot, casistica altamente probabile, le richieste HTPP verranno inoltrate seguendo il workaround più sopra descritto. 
+Premendo il bottone con l'icona di un martello (build), a patto che il workspace non sia vuoto, verrà generato il codice Javascript e presentato attraverso un *Modal*. Il codice verrà stampato all'interno di un Syntax Highlighter, il quale appunto, formatterà il codice a dovere ed applicherà degli stili per una consultazione facilitata e più chiara. Se sufficiente si potrà chiudere il Modal attraverso il semplice tasto dedicato (Chiudi) oppure eseguire il codice in questione attraverso il tasto "Esegui Codice". L'esecuzione del codice Javascript è resa possibile grazie alla funzione nativa `eval()`. Qualora il codice preveda la comunicazione con il robot, casistica altamente probabile, le richieste HTTP verranno inoltrate seguendo il workaround più sopra descritto. 
 
 Come durante il Controllo Remoto, nel caso in cui il robot incontri degli ostacoli durante gli spostamenti invocati dai comandi generati dai blocchi, si occuperà di evitarli in totale sicurezza riprendendo poi l'esecuzione del codice corrente.
 
 Quando si abbandonerà la schermata Blockly, il workspace corrente verrà automaticamente salvato in locale nell'applicazione per poi essere recuperato ad ogni nuovo  accesso alla sezione in questione.
 
 ### Panoramica Algoritmi di Area Coverage ###
+In questa parte dell'applicativo è possibile lanciare l'esecuzione di un algoritmo di massima copertura dell'area ed osservare i vari comportamenti. Gli algoritmi a disposizione sono stati illustrati in **Modalità Operative** : Random Walk, Boustrophedon e Spiral. 
+
+Ogni tab metterà a disposizione una breve introduzione all'algoritmo ed un comodo pulsante per avviare la navigazione autonoma. Dopo aver premuto quest'ultimo partità un countdown di 3 secondi per poi inviare la richiesta HTTP di impostazione della modalità operativa corrispendente all'algoritmo di interesse. Ricevuta conferma, il robot inizierà a muoversi applicando le regole imposte dall'algoritmo scelto. Ovviamente in questi scenari la funzionalità di prevenzione delle collisioni non viene attivata in quanto adrebbe ad influire sulle regole, nonchè comportamenti, che definiscono l'algoritmo in esecuzione.
+Qualora si volesse terminare l'esecuzione è possibile farlo grazie ad il comodo bottone "Ferma Robot" che apparirà al posto di "Avvia Navigazione Autonoma".

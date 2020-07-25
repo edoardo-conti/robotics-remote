@@ -2,7 +2,7 @@
 
 ## Introduzione ##
 
-Progetto finalizzato alla realizzazione di un robot controllabile da remoto e programmabile in totale sicurezza tramite paradigma di programmazione a blocchi.
+Progetto finalizzato alla realizzazione di un Robot stampato in 3D controllabile da remoto e programmabile in totale sicurezza con paradigma di programmazione a blocchi tramite applicazione dedicata iOS ed Android.
 * **Autore: Edoardo Conti [278717]**
 
 ------------------------------------------

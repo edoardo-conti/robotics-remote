@@ -2,7 +2,8 @@
 
 ## Introduzione ##
 
-Progetto finalizzato alla realizzazione di un robot controllabile da remoto e programmabile in totale sicurezza tramite paradigma di programmazione a blocchi.
+Progetto finalizzato alla realizzazione di un Robot stampato in 3D controllabile da remoto e programmabile in totale sicurezza con paradigma di programmazione a blocchi tramite applicazione dedicata iOS ed Android.
+* **Autore: Edoardo Conti [278717]**
 
 ------------------------------------------
 
@@ -16,23 +17,25 @@ Di seguito la componentistica principale dell'hardware del robot:
 - Gli spostamenti sono assicurati da due motori [Micro Metal Gearmotor HPCB 6V](https://www.pololu.com/product/3079) con ratio 298:1 .
 - I servomotori sono gestiti da due driver [DRV8838](https://www.pololu.com/product/2990), uno per ogni motore per assicurare un'erogazione continua massima di 1.7A (peak = 1.8A) in 0-11V.
 - Per la rilevazione di ostacoli, il robot vanta di un'array di 4 sensori di prossimità Sharp IR: 2 frontali con range di sensibilità 4-30cm ([GP2Y0A41SK0F](https://global.sharp/products/device/lineup/data/pdf/datasheet/gp2y0a41sk_e.pdf)) e 2 laterali con range di sensibilità 2-15cm ([GP2Y0A51SK0F](https://global.sharp/products/device/lineup/data/pdf/datasheet/gp2y0a51sk_e.pdf)). Nell'eventualità di un fallimento dei sensori nel rilevare ostacoli, nella parte frontale centrale del robot è presente un microswitch a levetta che funge da bumper.
-- L'alimentazione è assicurata da una batteria LiPo "ZIPPY Compact" da 1300mAh da 12V (3S). La misurazione del livello di carica è realizzata con un partitore di tensione, un tipo di circuito costituito da due o più componenti passivi collegati in serie ai capi dei quali, se viene applicata una tensione, essa si ripartirà sulle stesse componenti in base al loro valore. Questo renderà possibile leggere la tensione d'alimentazione tramite pin analogico accertandosi che il segnale rientri tra la `Vref (5V)` di Arduino in modo da non danneggiare la scheda. 
+- L'alimentazione è assicurata da una batteria LiPo "ZIPPY Compact" da 1300mAh da 12V (3S). La misurazione del livello di carica è realizzata con un partitore di tensione, un tipo di circuito costituito da due o più componenti passivi collegati in serie ai capi dei quali, se viene applicata una tensione, essa si ripartirà sulle stesse componenti in base al loro valore. Questo renderà possibile leggere la tensione d'alimentazione tramite pin analogico accertandosi che il segnale rientri tra la `Vref` (5V) di Arduino in modo da non danneggiare la scheda. 
+- Dato il range di tensioni raccomandate per alimentare l'Arduino UNO WiFi Rev2 tramite pin dedicato `Vin` (7-12V) è stato impiegato un regolatore di tensione DC-DC [LM2596S-ADJ](https://www.ti.com/lit/ds/symlink/lm2596.pdf?ts=1595681936647&ref_url=https%253A%252F%252Fwww.google.com%252F) per convertire la tensione in entrata dalla batteria compresa tra 10.5V e 12.6V a 8V stabili (il range di voltaggio in INPUT è approssimabile come proporzionale al livello di carica della batteria stessa).  
 - La struttura è stata stampanta in 3D con materiale PETG per una buona resistenza agli urti rispetto ad eventualmente un classico PLA. Il modello misura 21x21x6.5cm e sono state necessarie circa 18 ore per completare la stampa ad una velocità di 50mm/s con una Anet A8. (Crediti: [Cesar Nieto](https://www.thingiverse.com/cesnietor/designs))
 
-Si era optato l'impiego di un paio di [encoder magnetici](https://www.pololu.com/product/3081) per calcolare con precisione le rotazioni dei servomotori ma purtroppo non è stato possibile sfruttarli, causa malfunzionamento di un componente.
+Si è inoltre optato per l'impiego di un paio di [encoder magnetici](https://www.pololu.com/product/3081) per calcolare con precisione le rotazioni dei servomotori ed assicurare precisione dimensionale nei movimenti. Purtroppo non è stato possibile sfruttarli, causa malfunzionamento di uno dei due componenti. Pertanto sono stati utilizzati nel circuito al solo scopo di alimentare i due servomotori, senza sfruttare i pin sensoriali del conteggo di tick e verso di rotazione. La sostituzione del componente difettoso (con conseguente implementazione via software degli encoders) è sicuramente un ottimo candidato da inserire nella lista di upgrade futuri.
 
-Dato il range di tensione per alimentare l'Arduino Uno WiFi Rev2 tramite pin dedicato `Vin` si sfrutta un regolatore DC-DC per convertire la tensione in entrata dalla batteria da 10.5-12.6V a 8V stabili. 
+Per dotare il Single-Board Computer(SBC) Arduino di storage permanente si è installato un lettore di schede microSD il quale ha richiesto, dato il diverso microcontrollore dalla SBC classica Arduino Uno, l'impiego dell'header ICSP. Grazie a questa aggiunta è possibile salvare in modo permanente e consistente i parametri di connettività alla rete WiFi.
 
 Di seguito una tabella riassuntiva delle linee d'alimentazione:
 Batteria (10.5-12.6V) | Regolatore DC-DC (8V) | Arduino (3.3V) | Arduino (5V)
 ------------ | ------------- | ------------- | -------------
-| Regolatore DC-DC | Arduino `Vin` | 2x Driver DRV8838 | 2x Sharp GP2Y0A41SK0F  |
-| ~~Driver MOSFET Ventola~~ | 2x Servomotori  | - | 2x Sharp GP2Y0A51SK0F |
+| Regolatore DC-DC | Arduino `Vin` | 2x Logica driver DRV8838 (`Vcc`) | 2x Sharp GP2Y0A41SK0F  |
+| ~~Driver MOSFET Ventola~~ | 2x Driver DRV8838 per servomotori (`VM`)  | - | 2x Sharp GP2Y0A51SK0F |
 | - | - | - | Lettore Schede microSD |
 
-Per dotare la scheda Arduino di storage permanente si è installato un lettore di schede microSD il quale ha richiesto, dato il diverso microcontrollore dalla SBC classica Arduino Uno, l'impiego dell'header ICSP. Grazie a questa aggiunta è possibile salvare in modo permanente e consistente i parametri di connettività alla rete WiFi.
+Per limitare il rumore nelle letture dei sensori di prossimità IR si è stabilizzato la linea d'alimentazione con un filtro di 2 condensatori tra linea e GND (100µF e 100nF) e 1 resistore nel pin del segnale in uscita. Purtroppo questi due prodotti sono risultati eccessivamente rumorosi ed inclini a generari segnali peak, il quale implicano un numero importante di falsi positivi. Per una futura rivisitazione (state of the art) del progetto sarebbe opportuno valutare moduli LIDAR (Time-Of-Flight). (sorgente: https://www.robotshop.com/community/forum/t/how-to-improve-sharp-gp2dxxx-sensors/12989)
 
-Per limitare il rumore nelle letture dei sensori IR si è stabilizzato la linea d'alimentazione con un filtro di 2 condensatori tra linea e GND (100µF e 100nF) e 1 resistore nel pin del segnale in uscita. Purtroppo questi due prodotti sono risultati eccessivamente rumorosi ed inclini a generari segnali peak, il quale implicano un numero importante di falsi positivi. Per una futura rivisitazione (state of the art) del progetto sarebbe opportuno valutare moduli LIDAR (Time-Of-Flight). (sorgente: https://www.robotshop.com/community/forum/t/how-to-improve-sharp-gp2dxxx-sensors/12989)
+Di seguito le schematiche del circuito elettrico prodotte con KiCad: (**TODO**: da rivedere)
+![kicad_schematics](https://i.imgur.com/KBY2GHU.png)
 
 ------------------------------------------
 
@@ -48,11 +51,13 @@ Di seguito le librerie fondamentali impiegate:
 
 ### Modalità Operative ###
 Nel caso di un primo avvio, il software:
-1. Tenterà di collegarsi all'ultima Rete WiFi configurata ma considerando un'ambiente vergine, non rilevando parametri di configurazione nella scheda microSD passerà immediatamente allo step 2.
+1. Tenterà di collegarsi alla Rete WiFi configurata sul file `SETTINGS.CFG` in scheda microSD. Assumendo questo come primo avvio e non rilevando quindi parametri di configurazione, passerà immediatamente allo step 2.
 2. Scansione delle reti WiFi nelle vicinanze per salvare gli SSID e la tecnologia d'accesso (es. WPA2).
 3. Instaurazione dell'access point(AP) con SSID `wifiRobot0df8` e password `Ab02er98?E` (parametri di default hard-coded). Successivamente sarà necessario dotarsi di uno smartphone o iPhone per collegarsi alla rete appena creata. 
 4. Una volta connesso all'AP, basterà scansionare il QR Code presente nella scocca del robot per esser reinderizzati verso la pagina di configurazione di rete del robot dove verrà presentato un semplice form con un campo per selezionare la rete interessata tra le rilevate al passo 2 e un altro per la password. 
 5. Quando il software riceverà i parametri di connessione, registrerà i parametri scrivendoli su file di configurazione .cfg nella microSD, chiuderà l'access point ed inizierà a connettersi alla rete WiFi fornita per un massimo di 4 tentativi con delay incrementale. Ad ogni avvio successivo, il software partirà con lo step 1 e leggendo i parametri SSID e password si connetterà alla rete indicata.
+
+![arduino_ap_steps](https://i.imgur.com/Ej5DGEG.png)
 
 Quando il robot si sarà connesso con successo alla rete WiFi inizierà immediatamente a monitorare periodicamente il livello di carica della batteria per motivi precedentemente indicati e rimarrà in attesa di eventuali connessioni da parte dell'applicativo dedicato.
 
@@ -85,7 +90,7 @@ se lv_basso è VERO :
 Quindi se in un istante si rileva un Livello 2 si procede riducendo la velocità di movimento, se presente anche un Livello 1 l'algoritmo evita l'ostacolo ruotando il robot con angoli incrementali con funzione dipendente dalla distanza dall'oggetto e riprende l'ultimo movimento noto nella direzione libera individuata, ergo Livello 3, riprendendo la massima velocità.
 
 ### Web Server ###
-La gestione delle richieste HTTP è affidata al web server instaurato sfruttando la liberia **WiFiNINA**. Le API a disposizione sono di basso livello pertanto non è possibile un approccio simile ad altri linguaggi o tecnologie che più si prestano all'instaurazione di web service quali *nodejs*, *golang* e altri. Infatti è quasi obbligata la scelta di leggere byte per byte la richiesta in entrata (`char c = client.read();`). Questa grande limitazione motiva la scelta di sfruttare la libreria **Regexp** per filtrare le varie richieste, analizzando le linee lette tramite espressioni regolari. Di seguito una tabella che riassume tutte le richieste HTTP che il web server Arduino prende in gestione:
+La gestione delle richieste HTTP è affidata al web server instaurato sfruttando la liberia **WiFiNINA**. Le API a disposizione sono di basso livello pertanto non è possibile un approccio simile ad altri linguaggi o tecnologie che più si prestano all'instaurazione di web service quali *nodejs*, *golang* e altri. Infatti è quasi obbligata la scelta di leggere byte per byte la richiesta in entrata (`char c = client.read()`). Questa grande limitazione motiva la scelta di sfruttare la libreria **Regexp** per filtrare le varie richieste, analizzando le linee lette tramite espressioni regolari. Di seguito una tabella che riassume tutte le richieste HTTP che il web server Arduino prende in gestione:
 
 URL | Descrizione
 ------------ | ------------- |
@@ -157,9 +162,9 @@ Per ultimo, per compilare il progetto e generare le rispettive applicazioni nati
 ### Panoramica App Nativa ###
 L'applicazione si presenta con una schermata iniziale che richiede di connettersi al robot per poterlo controllare. Si ricorda che è necessario che sia lo smartphone che robot siano collegati alla stessa rete WiFi. Premuto il bottone di connessione, l'app invierà una richiesta HTTP `POST /api/connect` al robot e se questo non è collegato a nessun altro dispositivo accetterà la richiesta e restituirà il codice autenticativo, necessario per inoltrare le richieste future.
 
-La schermata quindi passarà alla dashboard dove, come prima opzione, sarà possibile controllare il robot inviando comandi di spostamento movimento in avanti, indietro, ruota a sinistra o destra. Appena connesso, il robot non attiva l'algoritmo di prevenzione degli ostacoli per evitare movimenti bruschi dovuti ad un ambiente non ancora idoneo, ma verrà attivato immediatamente dopo la prima richiesta di movimento, o meglio prima di risolvere la prima richiesta di movimento.
+La schermata quindi passarà alla dashboard dove, come prima opzione, sarà possibile controllare il robot inviando comandi di spostamento in avanti, indietro, ruota a sinistra o destra. Appena connesso, il robot, non attiva l'algoritmo di prevenzione degli ostacoli. Questo per evitare movimenti bruschi dovuti ad un ambiente non ancora idoneo, verrà attivato immediatamente dopo la prima richiesta di movimento, o meglio prima di risolvere la prima richiesta di movimento per assicurare totale protezione sin dal primo movimento.
 
-Quindi durante l'intero periodo di attività, il software del robot sarà constantemente all'allerta di ostacoli per un funzionamento in totale sicurezza. Nel caso in cui si richieda uno spostamento il quale però non risulti essere disponibile in quanto causerebbe un ostacolo all'interno della "bolla" del robot, un'animazione avverità di tale rilevazione. 
+Quindi durante l'intero periodo di attività, il software del robot sarà constantemente all'allerta di ostacoli per un funzionamento in totale sicurezza. Nel caso in cui si richieda uno spostamento il quale però non risulti essere disponibile in quanto implicherebbe un ostacolo all'interno della "bolla" del robot, un'animazione avverità di tale rilevazione e il movimento richiesto non verrà effettuato. 
 
 Scorrendo l'applicazione, più sotto è possibile consultare le condizioni d'alimentazione che mostrano tensione della batteria e livello stimato di carica.
 
@@ -168,6 +173,8 @@ Successivamente sono presenti due bottoni che permettono di accedere alle funzio
 - **Modalità Esplorazione**, per avviare algoritmi di massima copertura di un'area ed osservare i diversi comportamenti
 
 In fondo, come ultima opzione, il bottone per disconnettersi dal robot e lasciarlo libero per un'eventuale nuova connessione.
+
+![app_dashboard](https://i.imgur.com/e3mbZaN.png)
 
 ### Programmazione a blocchi per istruire il Robot ###
 In questa sezione dell'App è possibile approcciarsi al mondo della programmazione a blocchi per istruire il robot con svariati comandi a disposizione sfruttando **Blockly**. Blockly è una raccolta di librerie per la creazione di linguaggi ed editor di programmazione visiva basati su blocchi. È un progetto di Google ed è un software gratuito e open source rilasciato sotto licenza Apache 2.0 .

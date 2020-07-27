@@ -6,7 +6,7 @@
 
 ## Introduzione ##
 
-Progetto finalizzato alla realizzazione di un Robot stampato in 3D controllabile da remoto e programmabile in totale sicurezza con paradigma di programmazione a blocchi tramite applicazione dedicata iOS ed Android.
+Progetto finalizzato alla realizzazione di un Robot stampato in 3D controllabile da remoto e programmabile in totale sicurezza con paradigma di programmazione a blocchi tramite applicazione dedicata per iOS ed Android.
 
 ------------------------------------------
 
@@ -23,6 +23,10 @@ Di seguito la componentistica principale dell'hardware del robot:
 - L'alimentazione è assicurata da una batteria LiPo "ZIPPY Compact" da 1300mAh da 12V (3S). La misurazione del livello di carica è realizzata con un partitore di tensione, un tipo di circuito costituito da due componenti passivi collegati in serie ai capi dei quali, se viene applicata una tensione, essa si ripartirà sulle stesse componenti in base al loro valore. Tale implementazione rende possibile leggere la tensione d'alimentazione tramite pin analogico con la certezza che il segnale rientri nella tensione di riferimento (`Vref`) di Arduino, ovvero 5V, in modo da non danneggiare la scheda. 
 - Dato il range di tensioni raccomandate per alimentare l'Arduino UNO WiFi Rev2 tramite pin dedicato `Vin` (7-12V) è stato impiegato un regolatore di tensione DC-DC [LM2596S-ADJ](https://www.ti.com/lit/ds/symlink/lm2596.pdf?ts=1595681936647&ref_url=https%253A%252F%252Fwww.google.com%252F) per convertire la tensione in entrata dalla batteria compresa tra 10.5V e 12.6V a 8V stabili (il range di voltaggio in INPUT è approssimabile come proporzionale al livello di carica della batteria stessa).  
 - La struttura è stata stampanta in 3D con materiale PETG per una buona resistenza agli urti rispetto ad eventualmente un classico PLA. Il modello misura 21x21x6.5cm e sono state necessarie circa 18 ore per completare la stampa ad una velocità di 50mm/s con una Anet A8. (Crediti: [Cesar Nieto](https://www.thingiverse.com/cesnietor/designs))
+
+<p align="center">
+  <img src="https://i.imgur.com/3ebEaSW.jpg" width=50% height="auto">
+</p>
 
 Si è inoltre optato per l'impiego di un paio di [encoder magnetici](https://www.pololu.com/file/0J815/TLE4946-2K.pdf) per calcolare con precisione le rotazioni dei servomotori ed assicurare precisione dimensionale nei movimenti. Purtroppo non è stato possibile sfruttarli, causa malfunzionamento di uno dei due componenti. Pertanto sono stati utilizzati nel circuito al solo scopo di alimentare i due servomotori, senza sfruttare i pin sensoriali del conteggo di tick e verso di rotazione. La sostituzione del componente difettoso (con conseguente implementazione via software degli encoders) è sicuramente un ottimo candidato da inserire nella lista di upgrade futuri.
 

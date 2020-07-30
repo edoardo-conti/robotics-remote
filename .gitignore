@@ -10,6 +10,11 @@ npm-debug.*
 *.orig.*
 web-build/
 *.psd
+.expo/
+.expo-shared/
+.vscode/
+*.lock
+*.log
 
 # macOS
 .DS_Store

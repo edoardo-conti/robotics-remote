@@ -29,7 +29,7 @@ Di seguito una tabella riassuntiva delle linee d'alimentazione:
 Batteria (10.5-12.6V) | Regolatore DC-DC (8V) | Arduino (3.3V) | Arduino (5V)
 ------------ | ------------- | ------------- | -------------
 | Regolatore DC-DC | Arduino `Vin` | 2x Logica driver DRV8838 (`Vcc`) | 2x Sharp GP2Y0A41SK0F  |
-| ~~Driver MOSFET Ventola~~ | 2x Driver DRV8838 per servomotori (`VM`)  | - | 2x Sharp GP2Y0A51SK0F |
+| Driver MOSFET Ventola | 2x Driver DRV8838 per servomotori (`VM`)  | - | 2x Sharp GP2Y0A51SK0F |
 | - | - | - | Lettore Schede microSD |
 
 Per limitare il rumore nelle letture dei sensori di prossimità IR si è stabilizzato la linea d'alimentazione con un filtro di 2 condensatori tra linea e GND (100µF e 100nF) e 1 resistore nel pin del segnale in uscita. Purtroppo questi due prodotti sono risultati eccessivamente rumorosi ed inclini a generari segnali peak, il quale implicano un numero importante di falsi positivi. Per una futura rivisitazione (state of the art) del progetto sarebbe opportuno valutare moduli LIDAR (Time-Of-Flight). (sorgente: https://www.robotshop.com/community/forum/t/how-to-improve-sharp-gp2dxxx-sensors/12989)
@@ -190,6 +190,7 @@ Per posizionare un blocco all'interno del workspace è sufficiente aprire la cat
 Di seguito i blocchi disponibili nella categoria custom Robot:
 - Avanti/Indietro per `X`s
 - Rotazione sinistra/destra per `X`(s|°) 
+- Accendere/Spegnere ventola d'aspirazione
 - Lettura sensore frontale (sinistro/destro) o laterale (sinistro/destro)
 - Impostazione velocità a `X` (1 <= `X` <= 5)
 - Attendere `X`s

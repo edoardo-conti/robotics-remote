@@ -15,9 +15,7 @@ import WebView from "react-native-webview";
 import { useAsyncStorage } from "@react-native-community/async-storage";
 import SyntaxHighlighter from "react-native-syntax-highlighter";
 import { docco } from "react-syntax-highlighter/styles/hljs";
-
 import LottieView from "lottie-react-native";
-import Toast from "react-native-tiny-toast";
 
 import axios from "axios";
 
@@ -147,8 +145,21 @@ class BlocklyPage extends Component {
         // backup workspace
         backupWorkspace(data);
       }
-    } else if (message.id >= 4) {
-      // alert(message.data);
+    } else if (message.id == 4) {
+      // ventola d'aspirazione
+      var httpreq = message.url + "&auth=" + authcode;
+
+      await instance
+        .post(httpreq)
+        .then(function (response) {
+          //
+        })
+        .catch(function (e) {
+          // 
+        });
+
+    } else if(message.id >= 5) {
+      // se necessario...
     }
   }
 

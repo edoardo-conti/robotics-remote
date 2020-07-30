@@ -1,0 +1,36 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.options {
+  text-align: center;
+}
+#getcode,
+#runcode {
+  display: none;
+}
+.blocklyToolboxDiv {
+  padding: 0 10px !important;
+}
+#save,
+#load {
+  position: absolute;
+  right: 1.5vw;
+  display: none;
+}
+#save {
+  top: 45vh;
+}
+#load {
+  top: 55vh;
+}
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}

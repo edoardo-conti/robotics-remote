@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+    <title>Blockly</title>
+
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">-->
+    <style type="text/css">
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      .options {
+        text-align: center;
+      }
+      #getcode, #runcode {
+        display: none;
+      }
+      .blocklyToolboxDiv {
+        padding: 0 10px !important;
+      }
+      #save, #load {
+        position: absolute;
+        right: 1.5vw;
+        display: none;
+      }
+      #save {
+        top: 45vh;
+      }
+      #load {
+        top: 55vh;
+      }
+      .noselect {
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+      }
+    </style>
+  </head>
+
+  <body class="noselect">
+    <div class="blockly-page">
+      <div class="blockly-editor">
+        <div id="blockly-div" style="height: 100vh; width: 100%;"></div>
+        <xml
+          xmlns="https://developers.google.com/blockly/xml"
+          id="toolbox"
+          class="noselect"
+          style="display: none;"
+        >
+          <category name="Logic" colour="#5b80a5">
+            <block type="controls_if"></block>
+            <block type="logic_compare">
+              <field name="OP">EQ</field>
+            </block>
+            <block type="logic_operation">
+              <field name="OP">AND</field>
+            </block>
+            <block type="logic_boolean">
+              <field name="BOOL">TRUE</field>
+            </block>
+          </category>
+          <category name="Loops" colour="#5ba55b">
+            <block type="controls_repeat_ext">
+              <value name="TIMES">
+                <shadow type="math_number">
+                  <field name="NUM">2</field>
+                </shadow>
+              </value>
+            </block>
+            <block type="controls_whileUntil">
+              <field name="MODE">WHILE</field>
+            </block>
+          </category>
+          <category name="Math" colour="#5b67a5">
+            <block type="math_number">
+              <field name="NUM">0</field>
+            </block>
+            <block type="math_arithmetic">
+              <field name="OP">ADD</field>
+              <value name="A">
+                <shadow type="math_number">
+                  <field name="NUM">1</field>
+                </shadow>
+              </value>
+              <value name="B">
+                <shadow type="math_number">
+                  <field name="NUM">1</field>
+                </shadow>
+              </value>
+            </block>
+            <block type="math_random_int">
+              <value name="FROM">
+                <shadow type="math_number">
+                  <field name="NUM">1</field>
+                </shadow>
+              </value>
+              <value name="TO">
+                <shadow type="math_number">
+                  <field name="NUM">100</field>
+                </shadow>
+              </value>
+            </block>
+          </category>
+          <category name="Text" colour="#5ba58c">
+            <block type="text_print">
+              <value name="TEXT">
+                <shadow type="text">
+                  <field name="TEXT">abc</field>
+                </shadow>
+              </value>
+            </block>
+          </category>
+          <category name="Robot" colour="355">
+            <block type="move"></block>
+            <block type="turn">
+              <value name="DURATA">
+                <block type="seconds">
+                  <field name="SECONDI">0.2</field>
+                </block>
+              </value>
+            </block>
+            <block type="speed">
+              <value name="SPEED">
+                <shadow type="math_number">
+                  <field name="NUM">4</field>
+                </shadow>
+              </value>
+            </block>
+            <block type="fan"></block>
+            <block type="sensors"></block>
+            <block type="wait"></block>
+          </category>
+          <category name="Variables" colour="#a55b80">
+            <block type="angle"></block>
+            <block type="seconds"></block>
+            <block type="variables_set"></block>
+            <block type="variables_get"></block>
+          </category>
+        </xml>
+      </div>
+      <div class="options">
+        <button type="button" class="btn" id="getcode">Get Code</button>
+        <button type="button" class="btn" id="runcode">Run Code</button>
+        <button type="button" class="btn" id="save">Copia</button>
+        <button type="button" class="btn" id="load">Incolla</button>
+      </div>
+
+      <div class="showcode"></div>
+      <div class="runnedcode"></div>
+    </div>
+
+    <script src="./scripts/blockly_compressed.min.js"></script>
+    <script src="./scripts/blocks_compressed.min.js"></script>
+    <script src="./scripts/javascript_compressed.min.js"></script>
+    <script src="./scripts/it.min.js"></script>
+    <!-- <script src="scripts/storage.js"></script> -->
+
+    <script type="text/javascript">
+      // store last workspace to compare before backup
+      window.prevWorkspace = null;
+
+      function loadBlocklyWorkspace(workspace) {
+          if(workspace) {
+            xmlDom = Blockly.Xml.textToDom(workspace);
+            Blockly.Xml.domToWorkspace(xmlDom, Blockly.mainWorkspace);
+          }
+        }
+
+      /**
+       * gestione richieste HTTP
+       */
+      window.sensorValue = 100;
+      var data = {};
+
+      function sleep(milliseconds) {
+        const date = Date.now();
+        //const margin = 500; //ms di margine (todo: da migliorare)
+        const margin = window.RTT + ((window.RTT*50)/100);
+
+        let currentDate = null;
+        do {
+          currentDate = Date.now();
+        } while (currentDate - date < milliseconds + margin);
+      }
+
+      function forwardMotors(time) {
+        if (time > 0) {
+          // assembled the json message
+          data = {
+            id: 0,
+            url: "/motors/forward?delay=" + time,
+          };
+          // send the json with the inject method ReactNativeWebView to the RN App
+          window.ReactNativeWebView.postMessage(JSON.stringify(data));
+          // wait (todo: ensure http calls order)
+          sleep(time);
+
+          /*
+        const api_baseurl = 'http://10.0.0.116/api'
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', api_baseurl+'/motors/forward?delay='+time+'&auth='+robotAuthCode, false); // false for synchronous request
+        xhr.send(null);
+        */
+        }
+
+        // document.querySelector('.runnedcode').innerHTML = xhr.responseText;
+      }
+      function leftMotors(time) {
+        if (time > 0) {
+          data = {
+            id: 0,
+            url: "/motors/left?delay=" + time,
+          };
+          window.ReactNativeWebView.postMessage(JSON.stringify(data));
+          // wait
+          sleep(time);
+        }
+      }
+      function rightMotors(time) {
+        if (time > 0) {
+          data = {
+            id: 0,
+            url: "/motors/right?delay=" + time,
+          };
+          window.ReactNativeWebView.postMessage(JSON.stringify(data));
+          // wait
+          sleep(time);
+        }
+      }
+      function backwardMotors(time) {
+        if (time > 0) {
+          data = {
+            id: 0,
+            url: "/motors/backward?delay=" + time,
+          };
+          window.ReactNativeWebView.postMessage(JSON.stringify(data));
+          // wait
+          sleep(time);
+        }
+      }
+      function getDistance(sensor) {
+        var distance = 0;
+
+        data = {
+          id: 2,
+          sensor: sensor,
+        };
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+
+        // wait (todo: da migliorare)
+        //sleep(0); // margin
+        distance = window.sensorValue;
+
+        return distance;
+      }
+      function setSpeed(pwm) {
+        data = {
+          id: 0,
+          url: "/motors/speed?value=" + pwm,
+        };
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+
+        // wait
+        sleep(0); // margin
+      }
+      function turnFanON() {
+        data = {
+          id: 4,
+          url: "/fan?status=1"
+        };
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+
+        // wait
+        sleep(0); // margin
+      }
+      function turnFanOFF() {
+        data = {
+          id: 4,
+          url: "/fan?status=0"
+        };
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+
+        // wait
+        sleep(0); // margin
+      }
+    </script>
+
+    <script type="text/javascript">
+      /**
+       * @license
+       * Copyright 2017 Google LLC
+       * SPDX-License-Identifier: Apache-2.0
+       */
+
+      Blockly.defineBlocksWithJsonArray([
+        // block for vacuum fan
+        {
+          type: "fan",
+          message0: "%1 ventola",
+          args0: [
+            {
+              type: "field_dropdown",
+              name: "STATO",
+              options: [
+                ["Accendi", "1"],
+                ["Spegni", "0"],
+              ],
+            },
+          ],
+          colour: 355,
+          previousStatement: null,
+          nextStatement: null,
+          tooltip: "",
+          helpUrl: "",
+        },
+
+        // block for sensors
+        {
+          type: "sensors",
+          message0: "Sensore %1",
+          args0: [
+            {
+              type: "field_dropdown",
+              name: "SENSORE",
+              options: [
+                ["frontale ➡️", "front-right"],
+                ["frontale ⬅️", "front-left"],
+                ["laterale ➡️", "side-right"],
+                ["laterale ⬅️", "side-left"],
+              ],
+            },
+          ],
+          colour: 355,
+          output: "Number",
+        },
+
+        // Block for movement move
+        {
+          type: "move",
+          message0: "Vai %1 per %2s",
+          args0: [
+            {
+              type: "field_dropdown",
+              name: "DIREZIONE",
+              options: [
+                ["avanti ⬆️", "forward"],
+                ["indietro ⬇️", "backward"],
+              ],
+            },
+            {
+              type: "field_number",
+              name: "DURATA",
+              value: 0.2,
+              min: 0.2,
+              max: 5,
+              precision: 0.1,
+            },
+          ],
+          colour: 355,
+          previousStatement: null,
+          nextStatement: null,
+          tooltip: "",
+          helpUrl: "",
+        },
+
+        // Block for movement turn
+        {
+          type: "turn",
+          message0: "Ruota a %1 per %2",
+          args0: [
+            {
+              type: "field_dropdown",
+              name: "DIREZIONE",
+              options: [
+                ["sinistra ↩", "left"],
+                ["destra ↪", "right"],
+              ],
+            },
+            {
+              type: "input_value",
+              name: "DURATA",
+              check: "Number",
+            },
+          ],
+          colour: 355,
+          previousStatement: null,
+          nextStatement: null,
+          tooltip: "",
+          helpUrl: "",
+        },
+
+        // Block for wait
+        {
+          type: "wait",
+          message0: "aspetta %1s",
+          args0: [
+            {
+              type: "field_number",
+              name: "SECONDI",
+              value: 1,
+              min: 1,
+              max: 10,
+              precision: 1,
+            },
+          ],
+          colour: 355,
+          previousStatement: null,
+          nextStatement: null,
+          tooltip: "",
+          helpUrl: "",
+        },
+
+        // Block for speed
+        {
+          type: "speed",
+          message0: "Imposta velocità a %1",
+          args0: [
+            { 
+              type: "input_value",
+              name: "SPEED",
+              check: "Number",
+            },
+            /*
+            {
+              type: "field_number",
+              name: "SPEED",
+              value: 4,
+              min: 1,
+              max: 5,
+              precision: 1,
+            },
+            */
+          ],
+          colour: 355,
+          previousStatement: null,
+          nextStatement: null,
+          tooltip: "",
+          helpUrl: "",
+        },
+
+        // Block for variable angle
+        {
+          type: "angle",
+          message0: "%1",
+          args0: [
+            {
+              type: "field_angle",
+              name: "ANGOLO",
+              angle: 90,
+            },
+          ],
+          colour: 330,
+          output: "Number",
+        },
+
+        // Block for variable seconds
+        {
+          type: "seconds",
+          message0: "%1s",
+          args0: [
+            {
+              type: "field_number",
+              name: "SECONDI",
+              value: 0.2,
+              min: 0.2,
+              max: 5,
+              precision: 0.1,
+            },
+          ],
+          colour: 330,
+          output: "Number",
+        },
+
+        // Block for variable setter.
+        {
+          type: "variables_set",
+          message0: "%{BKY_VARIABLES_SET}",
+          args0: [
+            {
+              type: "field_variable",
+              name: "VAR",
+              variable: "%{BKY_VARIABLES_DEFAULT_NAME}",
+              variableTypes: ["Number", "Boolean"],
+              defaultType: "Number",
+            },
+            {
+              type: "input_value", // This expects an input of any type
+              name: "VALUE",
+              check: ["Number", "Boolean"],
+            },
+          ],
+          colour: 330,
+          previousStatement: null,
+          nextStatement: null,
+          tooltip: "",
+          helpUrl: "",
+        },
+
+        // Block for variable getter.
+        {
+          type: "variables_get",
+          message0: "%1",
+          args0: [
+            {
+              // Beginning of the field variable dropdown
+              type: "field_variable",
+              name: "VAR", // Static name of the field
+              variable: "%{BKY_VARIABLES_DEFAULT_NAME}", // Given at runtime
+              variableTypes: ["Number", "Boolean"], // Specifies what types to put in the dropdown
+              defaultType: "Number",
+            },
+          ],
+          output: ["Number", "Boolean"], // Null means the return value can be of any type
+          colour: 330,
+        },
+      ]);
+
+      Blockly.JavaScript["angle"] = function (block) {
+        var code = "" + block.getFieldValue("ANGOLO");
+
+        return [code, Blockly.JavaScript.ORDER_NONE];
+      };
+      Blockly.JavaScript["seconds"] = function (block) {
+        var code = "" + block.getFieldValue("SECONDI");
+
+        return [code, Blockly.JavaScript.ORDER_NONE];
+      };
+      Blockly.JavaScript["wait"] = function (block) {
+        var code = "sleep(" + block.getFieldValue("SECONDI") * 1000 + ");\r\n";
+
+        return code;
+      };
+      Blockly.JavaScript["fan"] = function (block) {
+        var status = block.getFieldValue("STATO");
+        var code = "";
+
+        return (status == 1) ? 'turnFanON();' : 'turnFanOFF();';
+      };
+      Blockly.JavaScript["sensors"] = function (block) {
+        var sensor = block.getFieldValue("SENSORE");
+
+        var code = "";
+        switch (sensor) {
+          case "front-right":
+            code = 'getDistance("front-right")';
+            break;
+          case "front-left":
+            code = 'getDistance("front-left")';
+            break;
+          case "side-right":
+            code = 'getDistance("side-right")';
+            break;
+          case "side-left":
+            code = 'getDistance("side-left")';
+            break;
+          default:
+            code = "";
+            break;
+        }
+
+        return [code, Blockly.JavaScript.ORDER_NONE];
+      };
+      Blockly.JavaScript["speed"] = function (block) {
+        //var speed = block.getFieldValue("SPEED");
+        var speed = Blockly.JavaScript.valueToCode(block, "SPEED", Blockly.JavaScript.ORDER_NONE) || "4"; 
+
+        var code = 'setSpeed(' + speed + ');\r\n';
+        
+        return code;
+      };
+
+      Blockly.JavaScript["move"] = function (block) {
+        var direction = block.getFieldValue("DIREZIONE");
+        var duration = block.getFieldValue("DURATA");
+
+        // check fields
+        duration *= 1000;
+
+        var code = "";
+        switch (direction) {
+          case "forward":
+            code = "forwardMotors(" + duration + ");\r\n";
+            break;
+          case "backward":
+            code = "backwardMotors(" + duration + ");\r\n";
+            break;
+          default:
+            code = "";
+            break;
+        }
+
+        return code;
+      };
+
+      Blockly.JavaScript["turn"] = function (block) {
+        var direction = block.getFieldValue("DIREZIONE");
+        var duration =
+          Blockly.JavaScript.valueToCode(
+            block,
+            "DURATA",
+            Blockly.JavaScript.ORDER_NONE
+          ) || "0";
+        //var duration = Blockly.JavaScript.valueToCode(block, 'DURATA', Blockly.JavaScript.ORDER_ATOMIC) || '0'
+        //var duration = Blockly.JavaScript.valueToCode(block, 'DURATA', Blockly.JavaScript.ORDER_ADDITION) || '0'
+
+        // detect if angle or seconds
+        if (duration == 0 || duration >= 15) {
+          // angoli (todo: calcolare tempo necessario dati i gradi)
+          // 90 : 700 = angle : x (proporzione molto approssimativa)
+          duration = parseInt((800 * duration) / 90);
+        } else {
+          // secondi (da trasformare in ms)
+          duration *= 1000;
+        }
+
+        var code = "";
+        switch (direction) {
+          case "left":
+            code = "leftMotors(" + duration + ");\r\n";
+            break;
+          case "right":
+            code = "rightMotors(" + duration + ");\r\n";
+            break;
+          default:
+            code = "";
+            break;
+        }
+
+        //return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+        return code;
+      };
+    </script>
+
+    <script type="text/javascript">
+      /**
+       * @license
+       * Copyright 2017 Google LLC
+       * SPDX-License-Identifier: Apache-2.0
+       */
+
+       function Builder_copy() {
+            var xmlDom = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
+            var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+
+            if(xmlText != window.prevWorkspace) {
+              data = {
+                id: 3,
+                data: xmlText,
+              };
+              window.ReactNativeWebView.postMessage(JSON.stringify(data));
+            }
+
+            // store 
+            window.prevWorkspace = xmlText;
+        };
+
+        function Builder_paste() {
+            data = {
+              id: 3,
+              data: 'LOAD',
+            };
+            window.ReactNativeWebView.postMessage(JSON.stringify(data));
+        };
+
+      //(function () {
+        function runCode() {
+          Blockly.JavaScript.addReservedWords("code");
+          var code = Blockly.JavaScript.workspaceToCode(
+            Blockly.getMainWorkspace()
+          );
+          // code += 'MusicMaker.play();';
+          // Eval can be dangerous. For more controlled execution, check
+          // https://github.com/NeilFraser/JS-Interpreter.
+          try {
+            window.eval(code);
+          } catch (error) {
+            console.log(error);
+            //alert("error: " + error);
+          }
+        }
+
+        function getCode() {
+          Blockly.JavaScript.addReservedWords("code");
+          var code = Blockly.JavaScript.workspaceToCode(
+            Blockly.getMainWorkspace()
+          );
+
+          try {
+            var data = {
+              id: 1,
+              code: code,
+            };
+            
+            window.ReactNativeWebView.postMessage(JSON.stringify(data));
+
+            //document.querySelector('.showcode').innerHTML = code;
+          } catch (error) {
+            console.log(error);
+          }
+        }
+
+        document.querySelector("#runcode").addEventListener("click", runCode);
+        document.querySelector("#getcode").addEventListener("click", getCode);
+
+        document.querySelector("#save").addEventListener("click", Builder_copy);
+        document.querySelector("#load").addEventListener("click", Builder_paste);
+
+        //document.body.setAttribute('mode', 'blockly');
+        //let workspace = Blockly.getMainWorkspace();
+        //workspace.clear();
+
+        /* TODO: Change toolbox XML ID if necessary. Can export toolbox XML from Workspace Factory. */
+        var toolbox = document.getElementById("toolbox");
+
+        var options = {
+          toolbox: toolbox,
+          collapse: false,
+          comments: false,
+          disable: true,
+          maxBlocks: Infinity,
+          trashcan: true,
+          horizontalLayout: true,
+          toolboxPosition: "end",
+          css: true,
+          media: "./media/",
+          rtl: false,
+          scrollbars: false,
+          sounds: true,
+          oneBasedIndex: true,
+          grid: {
+            spacing: 16,
+            length: 2,
+            colour: "#ccc",
+            snap: true,
+          },
+          zoom: {
+            controls: true,
+            wheel: true,
+            startScale: 1,
+            maxScale: 3,
+            minScale: 0.3,
+            scaleSpeed: 1.2,
+          },
+        };
+        
+        /* Inject your workspace */
+
+        var workspace = Blockly.inject("blockly-div", options);
+
+        function onWorkspaceChange(event) {
+          if (event.type == Blockly.Events.BLOCK_CREATE ||
+              event.type == Blockly.Events.BLOCK_DELETE ||
+              event.type == Blockly.Events.CHANGE ||
+              event.type == Blockly.Events.MOVE ||
+              event.type == Blockly.Events.VAR_CREATE ||
+              event.type == Blockly.Events.VAR_DELETE ||
+              event.type == Blockly.Events.VAR_RENAME) {
+                Builder_copy();
+              }
+        }
+        workspace.addChangeListener(onWorkspaceChange);
+
+        
+        /*
+  Blockly.inject('blockly-div', {
+    media: './media/',
+    toolbox: document.getElementById('toolbox'),
+    toolboxPosition: 'end',
+    horizontalLayout: true,
+    scrollbars: false,
+    grid: {
+      spacing: 20,
+      length: 3,
+      colour: '#ccc',
+      snap: true
+    },
+    zoom: {
+      controls: true,
+      wheel: true,
+      startScale: 1.0,
+      maxScale: 3,
+      minScale: 0.3,
+      scaleSpeed: 1.2
+    },
+  });
+  */
+      //})();
+    </script>
+  </body>
+</html>

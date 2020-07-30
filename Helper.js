@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
-  Button,
   View,
   SafeAreaView,
   Text,
@@ -15,19 +14,14 @@ import {
   Platform,
   ImageBackground,
 } from "react-native";
-import Constants from "expo-constants";
 import { useAsyncStorage } from "@react-native-community/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-
-import * as Animatable from 'react-native-animatable';
-
 import LottieView from "lottie-react-native";
-
 import useInterval from "@use-it/interval";
-
+import * as Animatable from 'react-native-animatable';
 import axios from "axios";
+
 import BlocklyPage, { getCode, runCode } from "./BlocklyPage";
 import SwiperComponent from "./areaCoveragePage";
 
@@ -338,7 +332,9 @@ export function HomeScreen({ navigation }) {
             }
           })
           .catch(function (error) {
-            // TODO: verificare se corretto farlo ->
+            // TODO: ricontrollare ->
+
+            /*
             setIsTimerRunning(false);
             
             Alert.alert(
@@ -358,10 +354,12 @@ export function HomeScreen({ navigation }) {
               ],
               { cancelable: false }
             );
+            */
+
           });
       }
     },
-    isTimerRunning ? 15000 : null
+    isTimerRunning ? 10000 : null
   );
 
   useFocusEffect(

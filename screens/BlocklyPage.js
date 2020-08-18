@@ -204,12 +204,12 @@ class BlocklyPage extends Component {
                   {Platform.OS == "android" ? (
                     <Image
                       style={[styles.codeImage]}
-                      source={require("./assets/images/code-window.png")}
+                      source={require("../assets/images/code-window.png")}
                       resizeMode="contain"
                     />
                   ) : (
                     <LottieView
-                      source={require("./assets/animations/code-window.json")}
+                      source={require("../assets/animations/code-window.json")}
                       autoPlay
                       loop={true}
                       style={[styles.codeAnimation]}

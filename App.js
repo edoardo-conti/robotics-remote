@@ -14,8 +14,8 @@ import {
   HiddenItem,
 } from 'react-navigation-header-buttons';
 
-import { HomeScreen, BlocklyScreen, areaCoverageScreen } from "./Helper";
-import { getCode, refreshWebView, clearBlocklyWorkspace } from "./BlocklyPage";
+import { HomeScreen, BlocklyScreen, areaCoverageScreen } from "./helpers/Helper";
+import { getCode, refreshWebView, clearBlocklyWorkspace } from "./screens/BlocklyPage";
 
 import { BlurView } from 'expo-blur';
 

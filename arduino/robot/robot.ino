@@ -33,6 +33,7 @@
 #define ROBOT_GET_SENSORS     0x1011
 #define ROBOT_GET_PING        0x1100
 #define ROBOT_SET_FAN         0x1101
+#define ROBOT_SET_BLOCKLY     0x1110
 
 // Variabili per lo storing di paramatri ssid e psw di rete
 char cfg_ssid[16];
@@ -140,7 +141,7 @@ unsigned long interval_algo = 2000; // 2s
 unsigned long clientLastReqMillis_ping = 0;
 unsigned long currentMillis_ping;
 unsigned long prevMillis_ping = 0;
-unsigned long interval_ping = 20000; // 10s
+unsigned long interval_ping = 20000; // 20s
 bool updatecurrentMillisPing = false;
 
 /*
@@ -169,6 +170,7 @@ short last_remote_direction = -1;
    @lv_medium, rilevato almeno un livello 2 in @levels
    @lv_low, rilevato almeno un livello 1 in @levels
    @corner, rilevazione angolo
+   @wasBBXon, flag notifica intervento algoritmo durante esecuzione programma Blockly
 */
 bool self_protection_enabled = false;
 int bubbleBandBounds[2] = {50, 50};
@@ -177,6 +179,7 @@ short front_ranges[2] = {100, 150};
 short side_ranges[2] = {40, 120};
 short levels[4] = {3, 3, 3, 3};
 short corner = 0;
+short wasBBXon = 0;
 bool lv_medium = false;
 bool lv_low = false;
 
@@ -562,6 +565,24 @@ void percentDecode(char *src) {
   }
   *dst = '\0';
 }
+
+
+/*
+   millisToString, decodifica millisecondi in data
+   @t, tempo misurato in secondi -> millis() / 1000;
+*/
+/*
+  char * millisToString(unsigned long t)
+  {
+  static char str[12];
+  long h = t / 3600;
+  t = t % 3600;
+  int m = t / 60;
+  int s = t % 60;
+  sprintf(str, "%04ld:%02d:%02d", h, m, s);
+  return str;
+  }
+*/
 
 /*
    checkBattery, funzione invocata periodicamente tramite timer per controllare livello carica batteria
@@ -1091,6 +1112,10 @@ void selfProtection(int mode, byte logs) {
       }
       // ##### --> FINE gestione ostacoli <-- #####
 
+      // segnalazione flag attivazione algoritmo
+      if (wasBBXon == 0) {
+        wasBBXon = 1;
+      }
 
     }
 
@@ -1344,7 +1369,9 @@ void loop() {
       short authcode = -1;
       short opmode = -1;
       short fanStatus = -1;
+      short blocklyStatus = -1;
       char result;
+      char *timestamp_log;
 
       // client connesso(inizio richiesta HTTP) -->
       while (client.connected() && cmd_not_found) {
@@ -1426,6 +1453,11 @@ void loop() {
               } else if (regexp.Match("POST( )%/api%/fan%?status=(%d+)&auth=(%d+)( )HTTP%/1%.1") == REGEXP_MATCHED) {
                 multiplexer = ROBOT_SET_FAN;
                 fanStatus = atoi(regexp.GetCapture(buf, 1));
+                authcode = atoi(regexp.GetCapture(buf, 2));
+
+              } else if (regexp.Match("POST( )%/api%/blockly%?status=(%d+)&auth=(%d+)( )HTTP%/1%.1") == REGEXP_MATCHED) {
+                multiplexer = ROBOT_SET_BLOCKLY;
+                blocklyStatus = atoi(regexp.GetCapture(buf, 1));
                 authcode = atoi(regexp.GetCapture(buf, 2));
 
               }
@@ -1676,7 +1708,9 @@ void loop() {
           client.println();
 
           // Logging
-          Serial.println("[wifi] Client: ROBOT_GET_PING -> OK");
+          //timestamp_log = millisToString(clientLastReqMillis_ping / 1000);
+          Serial.print("[wifi] Client: ROBOT_GET_PING -> OK | timestamp=");
+          Serial.println(clientLastReqMillis_ping);
         } else {
           // richiesta HTTP non autenticata
           client.println("HTTP/1.1 401 Unauthorized\nContent-type: application/json\nAccess-Control-Allow-Origin: *\n");
@@ -1866,6 +1900,38 @@ void loop() {
 
         // Logging
         Serial.println("[wifi] MOTORS_STOP");
+      } else if (multiplexer == ROBOT_SET_BLOCKLY &&
+                 connection_req_auth == authcode) {
+
+        client.println("HTTP/1.1 200 OK");
+        client.println("Content-type: application/json");
+        client.println("Access-Control-Allow-Origin: *");
+        client.println();
+
+        // Logging
+        Serial.print("[wifi] ROBOT_SET_BLOCKLY | blocklyStatus=");
+
+        if (blocklyStatus == 0) {
+          // inizio esecuzione programma blockly
+          wasBBXon = 0;
+          client.print("{\"status\":\"OK\"}");
+
+          // Logging
+          Serial.println(blocklyStatus);
+        } else if (blocklyStatus == 1) {
+          // fine esecuzione programma blockly
+          // verifica occorrenza intervento BubbleBand Extended
+          client.print("{\"status\":");
+          client.print(wasBBXon);
+          client.print("}");
+
+          // Logging
+          Serial.print(blocklyStatus);
+          Serial.print(", | wasBBXon=");
+          Serial.println(wasBBXon);
+        }
+
+        client.println();
       }
 
       // chiusura connessione
@@ -1948,7 +2014,7 @@ void loop() {
           break;
       }
 
-      // very little delay
+      // piccolo ritardo
       delay(1);
 
       /*

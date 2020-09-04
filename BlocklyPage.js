@@ -25,7 +25,7 @@ let authcode = -1,
   webref = null,
   modalVisible = false,
   opacity = new Animated.Value(0),
-  directionMessage = "";
+  toastMessage = "";
 
 const instance = axios.create({
   //baseURL: "http://10.0.0.116/api",
@@ -76,15 +76,16 @@ class BlocklyPage extends Component {
         })
         .catch(function (e) {
           if (e.response != undefined) {
+            toastMessage = "Ops, evito ostacolo ";
             switch (e.response.data.message) {
               case "RIGHT_OBSTACLES":
-                directionMessage = "a destra.";
+                toastMessage += "a destra.";
                 break;
               case "LEFT_OBSTACLES":
-                directionMessage = "a sinistra.";
+                toastMessage += "a sinistra.";
                 break;
               case "FRONT_OBSTACLES":
-                directionMessage = "in avanti.";
+                toastMessage += "in avanti.";
                 break;
             }
           }
@@ -159,7 +160,41 @@ class BlocklyPage extends Component {
         });
 
     } else if(message.id >= 5) {
-      // se necessario...
+      // comunicazioni periodo esecuzione programma blockly
+      var httpreq = message.url + "&auth=" + authcode;
+
+      await instance
+        .post(httpreq)
+        .then(function (response) {
+          if (response.data != undefined) {
+            if (response.data.status != "OK") {
+              // fine esecuzione programma
+              if(response.data.status == 1) {
+                // notifico l'intervento
+                Alert.alert(
+                  "Fai attenzione!",
+                  "L'esecuzione del programma è stata mediata dall'algoritmo di protezione del robot.",
+                  [{ text: "OK" }],
+                  { cancelable: false }
+                );
+                
+                /*
+                toastMessage = "Durante l'esecuzione del programma è stato necessario l'intervento dell'algoritmo Bubble Band Extended.";
+
+                Animated.timing(opacity, {
+                  toValue: 1,
+                  duration: 500,
+                  useNativeDriver: true,
+                }).start();
+                */
+              }
+            }
+          }
+        })
+        .catch(function (e) {
+          // 
+        });
+
     }
   }
 
@@ -196,7 +231,7 @@ class BlocklyPage extends Component {
                 ]}
               >
                 <Text style={styles.toast}>
-                  Ops, evito ostacolo {directionMessage}
+                  {toastMessage}
                 </Text>
               </Animated.View>
               {this.state.codeAnimationVisible ? (

@@ -27,7 +27,7 @@ import SwiperComponent from "./areaCoveragePage";
 
 const instance = axios.create({
   baseURL: "http://arduino-wifi-robot-0df8/api",
-  //timeout: 1000,
+  //timeout: 5000,
 });
 
 /*
@@ -59,8 +59,9 @@ export function HomeScreen({ navigation }) {
   // refresh
   const [refreshing, setRefreshing] = React.useState(false);
   // timer Round Trip Time
-  const [isTimerRunning, setIsTimerRunning] = useState(true);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [pingCounter, setPingCounter] = useState(0);
+  const [pingMissCounter, setPingMissCounter] = useState(0);
   const [RTT, setRTT] = useState(500);
 
   //const onRefresh = React.useCallback(() => {
@@ -214,7 +215,9 @@ export function HomeScreen({ navigation }) {
 
   function getRobotInfo(authcode) {
     return instance
-      .get("/sensors/battery?auth=" + authcode)
+      .get("/sensors/battery?auth=" + authcode, {
+        timeout: 5000,
+      })
       .then(function (response) {
         if (response.data.status == "OK") {
           setBattery(response.data.data);
@@ -224,7 +227,17 @@ export function HomeScreen({ navigation }) {
         }
       })
       .catch(function (error) {
-        //alert("errore recupero info batteria robot");
+        Alert.alert(
+          "Connessione con il Robot persa",
+          "Verificare l'ambiente di rete",
+          [
+            {
+              text: "Ok",
+              onPress: () => disconnectRobot(),
+            },
+          ],
+          { cancelable: false }
+        );
       });
   }
 
@@ -330,9 +343,28 @@ export function HomeScreen({ navigation }) {
             if (currentRTT > RTT) {
               setRTT(currentRTT);
             }
+
+            // reset pingMissCounter
+            setPingMissCounter(0);
           })
           .catch(function (error) {
             // TODO: ricontrollare ->
+            setPingMissCounter(pingMissCounter => pingMissCounter + 1);
+                        
+            if(pingMissCounter == 2) {
+              setIsTimerRunning(false);
+              Alert.alert(
+                "Connessione con il Robot persa",
+                "Verificare l'ambiente di rete",
+                [
+                  {
+                    text: "Ok",
+                    onPress: () => disconnectRobot(),
+                  },
+                ],
+                { cancelable: false }
+              );
+            }
 
             /*
             setIsTimerRunning(false);
@@ -697,7 +729,7 @@ export function runCodeBlockly() {
 export function networkErrorAlert() {
   Alert.alert(
     "Impossibile completare l'operazione",
-    "Verificare la connessione alla rete",
+    "Verificare la connessione della rete",
     [{ text: "OK" }],
     { cancelable: true }
   );

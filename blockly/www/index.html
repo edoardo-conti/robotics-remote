@@ -679,11 +679,15 @@
           var code = Blockly.JavaScript.workspaceToCode(
             Blockly.getMainWorkspace()
           );
-          // code += 'MusicMaker.play();';
           // Eval can be dangerous. For more controlled execution, check
           // https://github.com/NeilFraser/JS-Interpreter.
           try {
+            // esecuzione codice, richieste per definire il periodo d'esecuzione del programma blockly
+            window.ReactNativeWebView.postMessage(JSON.stringify({id: 5, url: "/blockly?status=0"}));
+            sleep(0);
             window.eval(code);
+            window.ReactNativeWebView.postMessage(JSON.stringify({id: 5, url: "/blockly?status=1"}));
+
           } catch (error) {
             console.log(error);
             //alert("error: " + error);

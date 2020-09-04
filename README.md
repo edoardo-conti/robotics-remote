@@ -3,8 +3,8 @@
 ## Introduzione ##
 
 Progetto open-source finalizzato alla realizzazione di un robot domestico stampato in 3D controllabile da remoto con supporto alla programmazione a blocchi tramite applicazione dedicata per iOS ed Android.
-* **Autore: Edoardo Conti [278717]**
-* **Titolo Tesi: Progetto open-source di robot domestico con supporto alla programmazione a blocchi per scopi didattici**
+* **Autore**: Edoardo Conti [278717]
+* **Titolo Tesi**: Progetto open-source di robot domestico con supporto alla programmazione a blocchi per scopi didattici
 
 ------------------------------------------
 

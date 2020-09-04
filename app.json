@@ -2,6 +2,7 @@
   "expo": {
     "name": "RoboticsRemote",
     "slug": "RoboticsRemote",
+    "description": "Applicazione open-source per il controllo remoto di un robot domestico con supporto alla programmazione a blocchi per scopi didattici",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

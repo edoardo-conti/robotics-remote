@@ -22,8 +22,8 @@ import useInterval from "@use-it/interval";
 import * as Animatable from 'react-native-animatable';
 import axios from "axios";
 
-import BlocklyPage, { getCode, runCode } from "./BlocklyPage";
-import SwiperComponent from "./areaCoveragePage";
+import BlocklyPage, { getCode, runCode } from "../screens/BlocklyPage";
+import SwiperComponent from "../screens/areaCoveragePage";
 
 const instance = axios.create({
   baseURL: "http://arduino-wifi-robot-0df8/api",
@@ -34,12 +34,12 @@ const instance = axios.create({
  * Sprites
  */
 const sprites = {
-  robot: require("./assets/robot_palette2.png"),
-  robotForward: require("./assets/robot_forward.png"),
-  robotBackwards: require("./assets/robot_backward.png"),
-  robotTurnLeft: require("./assets/robot_turn_left.png"),
-  robotTurnRight: require("./assets/robot_turn_right.png"),
-  arrow: require("./assets/arrow_min_white.png"),
+  robot: require("../assets/robot_palette2.png"),
+  robotForward: require("../assets/robot_forward.png"),
+  robotBackwards: require("../assets/robot_backward.png"),
+  robotTurnLeft: require("../assets/robot_turn_left.png"),
+  robotTurnRight: require("../assets/robot_turn_right.png"),
+  arrow: require("../assets/arrow_min_white.png"),
 };
 
 export function HomeScreen({ navigation }) {
@@ -344,8 +344,14 @@ export function HomeScreen({ navigation }) {
               setRTT(currentRTT);
             }
 
+<<<<<<< HEAD:Helper.js
             // reset pingMissCounter
             setPingMissCounter(0);
+=======
+            // debug
+            // alert(`current: ${currentRTT} | rtt: ${RTT}`);
+            
+>>>>>>> da543824b3fd416a723cde112d6e4b9f2bb4e2bf:helpers/Helper.js
           })
           .catch(function (error) {
             // TODO: ricontrollare ->
@@ -434,7 +440,7 @@ export function HomeScreen({ navigation }) {
           {isRobotConnected ? /*<PostHeader />*/ null : null}
 
           <ImageBackground
-            source={require("./assets/test.jpg")}
+            source={require("../assets/test.jpg")}
             style={styles.mainBackgroundPalette}
             resizeMode="stretch"
           >
@@ -570,12 +576,12 @@ export function HomeScreen({ navigation }) {
                 {Platform.OS == "android" ? (
                   <Image
                     style={styles.tabViewAnimation}
-                    source={require("./assets/images/boy-and-mobile-interactions.png")}
+                    source={require("../assets/images/boy-and-mobile-interactions.png")}
                     resizeMode="cover"
                   />
                 ) : (
                   <LottieView
-                    source={require("./assets/animations/boy-and-mobile-interactions.json")}
+                    source={require("../assets/animations/boy-and-mobile-interactions.json")}
                     autoPlay
                     loop={true}
                     style={styles.tabViewAnimation}
@@ -600,12 +606,12 @@ export function HomeScreen({ navigation }) {
                 {Platform.OS == "android" ? (
                   <Image
                     style={styles.tabViewAnimation}
-                    source={require("./assets/images/mobile-tap-interaction-animation.png")}
+                    source={require("../assets/images/mobile-tap-interaction-animation.png")}
                     resizeMode="cover"
                   />
                 ) : (
                   <LottieView
-                    source={require("./assets/animations/mobile-tap-interaction-animation.json")}
+                    source={require("../assets/animations/mobile-tap-interaction-animation.json")}
                     autoPlay
                     loop={true}
                     style={[
@@ -637,12 +643,12 @@ export function HomeScreen({ navigation }) {
             {Platform.OS == "android" ? (
               <Image
                 style={styles.viewLoggedOutAndroidImage}
-                source={require("./assets/images/freelancers-life.png")}
+                source={require("../assets/images/freelancers-life.png")}
                 resizeMode="contain"
               />
             ) : (
               <LottieView
-                source={require("./assets/animations/freelancers-life.json")}
+                source={require("../assets/animations/freelancers-life.json")}
                 //autoPlay
                 loop={false}
                 style={styles.viewLoggedOutAnimation}

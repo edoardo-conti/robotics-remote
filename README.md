@@ -1,9 +1,10 @@
-# 🎓 Progetto di Laurea #
+# 🎓 Progetto di Laurea  #
 
 ## Introduzione ##
 
-Progetto finalizzato alla realizzazione di un Robot stampato in 3D controllabile da remoto e programmabile in totale sicurezza con paradigma di programmazione a blocchi tramite applicazione dedicata iOS ed Android.
+Progetto open-source finalizzato alla realizzazione di un robot domestico stampato in 3D controllabile da remoto con supporto alla programmazione a blocchi tramite applicazione dedicata per iOS ed Android.
 * **Autore: Edoardo Conti [278717]**
+* **Titolo Tesi: Progetto open-source di robot domestico con supporto alla programmazione a blocchi per scopi didattici**
 
 ------------------------------------------
 
@@ -34,8 +35,8 @@ Batteria (10.5-12.6V) | Regolatore DC-DC (8V) | Arduino (3.3V) | Arduino (5V)
 
 Per limitare il rumore nelle letture dei sensori di prossimità IR si è stabilizzato la linea d'alimentazione con un filtro di 2 condensatori tra linea e GND (100µF e 100nF) e 1 resistore nel pin del segnale in uscita. Purtroppo questi due prodotti sono risultati eccessivamente rumorosi ed inclini a generari segnali peak, il quale implicano un numero importante di falsi positivi. Per una futura rivisitazione (state of the art) del progetto sarebbe opportuno valutare moduli LIDAR (Time-Of-Flight). (sorgente: https://www.robotshop.com/community/forum/t/how-to-improve-sharp-gp2dxxx-sensors/12989)
 
-Di seguito le schematiche del circuito elettrico prodotte con KiCad: (**TODO**: da rivedere)
-![kicad_schematics](https://i.imgur.com/KBY2GHU.png)
+Di seguito le schematiche del circuito elettrico prodotte con KiCad: 
+![kicad_schematics](https://i.imgur.com/0cgZCYr.png)
 
 ------------------------------------------
 
@@ -179,9 +180,6 @@ In fondo, come ultima opzione, il bottone per disconnettersi dal robot e lasciar
 ### Programmazione a blocchi per istruire il Robot ###
 In questa sezione dell'App è possibile approcciarsi al mondo della programmazione a blocchi per istruire il robot con svariati comandi a disposizione sfruttando **Blockly**. Blockly è una raccolta di librerie per la creazione di linguaggi ed editor di programmazione visiva basati su blocchi. È un progetto di Google ed è un software gratuito e open source rilasciato sotto licenza Apache 2.0 .
 
-Purtroppo, dato il mancato supporto alle librerie js come assets Android, non è stato possibile implementare tale servizio in locale. Per ovviare al problema si è deciso di ospitare il codice sorgente della pagina Blocky su *Fast.io* , una piattaforma moderna di file hosting. La pagina web principale (`index.html`) è caricata nell'App sfruttando il componente `WebView` di React Native. Qui nasce un ulteriore problema, più nello specifico un ostacolo a livello di networking. Infatti la rete del robot e della pagina da dove è caricato Blockly sono, per ovvie ragioni, differenti e quindi risulterà impossibile inviare richieste HTTP al web server Arduino per controllare il robot. La soluzione che è stata adotatta è resa disponibile direttamente dal componente WebView il quale espone metodi di comunicazione tra RN e pagina web caricata attraverso l'injection di metodi Javascript nella pagina destinazione. Ecco quindi che è possibile chiamare dal codice sorgente Javascript di Blockly da dominio fast.io funzioni come `window.ReactNativeWebView.postMessage()` il quale inviano appunto messaggi all'applicativo React Native intercettabili tramite *prop* dedicato (`onMessage`) del componente. Il workaround appena introdotto è sfruttato per inviare messaggi che richiedono l'invio di determinate richieste HTTP da parte dell'App che ovviamente si trova nella stessa rete del robot. Facile intuire quindi che l'esecuzione del codice del workspace generato tramite Blockly riguardo all'inoltro di comandi al robot si traducono in chiamate `window.ReactNativeWebView.postMessage(<json_richiesta_http>)` dove come parametro viene passato del JSON che includa l'URL della richiesta HTTP ed eventuali parametri come ad esempio il delay di uno spostamento. 
-
-L'interfaccia vanta di una toolbar dal quale. 
 Purtroppo, dato il mancato supporto alle librerie js come assets Android, non è stato possibile implementare tale servizio in locale. Per ovviare al problema si è deciso di ospitare il codice sorgente della pagina Blocky su *Fast.io* , una piattaforma moderna di file hosting. La pagina web principale (`index.html`) è caricata nell'App sfruttando il componente `WebView` di React Native. Qui nasce un ulteriore problema, più nello specifico un ostacolo a livello di networking. Infatti la rete del robot e della pagina da dove è caricato Blockly sono, per ovvie ragioni, differenti e quindi risulterà impossibile inviare richieste HTTP al web server Arduino per controllare il robot. La soluzione che è stata adotatta è resa disponibile direttamente dal componente WebView il quale espone metodi di comunicazione tra RN e pagina web caricata attraverso l'injection di metodi Javascript nella pagina destinazione. Ecco quindi che è possibile chiamare dal codice sorgente Javascript di Blockly da dominio fast.io funzioni come `window.ReactNativeWebView.postMessage()` il quale inviano appunto messaggi all'applicativo React Native intercettabili tramite *prop* dedicato (`onMessage`) del componente. Il workaround appena introdotto è sfruttato per inviare messaggi che richiedono l'invio di determinate richieste HTTP da parte dell'App che ovviamente si trova nella stessa rete del robot. Facile intuire quindi che l'esecuzione del codice del workspace generato tramite Blockly riguardo all'inoltro di comandi al robot si traducono in chiamate `window.ReactNativeWebView.postMessage(<json_richiesta_http>)` dove come parametro viene passato del JSON che includa l'URL della richiesta HTTP ed eventuali parametri come ad esempio il delay di uno spostamento. 
 
 L'interfaccia vanta di una toolbar dal quale è possibile scegliere e posizione all'interno del workspace blocchi funzionali divisi per categorie d'appartenenza. Al momento sono disponibili blocchi delle seguenti categorie: Logic, Loops, Math, Text, *Robot*(custom) e Variables.

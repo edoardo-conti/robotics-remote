@@ -75,12 +75,12 @@ export default class SwiperComponent extends Component {
           {Platform.OS == "android" ? (
             <Image
               style={[styles.algsSlideImage]}
-              source={require("./assets/images/random_walk.png")}
+              source={require("../assets/images/random_walk.png")}
               resizeMode="cover"
             ></Image>
           ) : (
             <LottieView
-              source={require("./assets/animations/random_walk.json")}
+              source={require("../assets/animations/random_walk.json")}
               autoPlay
               loop={false}
               style={styles.algsSlideAnimation}
@@ -102,10 +102,7 @@ export default class SwiperComponent extends Component {
             </View>
             <Text style={styles.viewCardTitle}>Random Walk</Text>
             <Text style={styles.viewCardDesc}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat.
+            Algoritmo che non prevede la pianificazione di un percorso bensì si fonda su un serie di scelte del tutto randomiche e non frutto di una qualsiasi analisi della situazione corrente.
             </Text>
             <View style={styles.viewCardButtons}>
               {this.state.algRequested == 2 ? (
@@ -166,12 +163,12 @@ export default class SwiperComponent extends Component {
           {Platform.OS == "android" ? (
             <Image
               style={[styles.algsSlideImage]}
-              source={require("./assets/images/boustrophedon.png")}
+              source={require("../assets/images/boustrophedon.png")}
               resizeMode="cover"
             />
           ) : (
             <LottieView
-              source={require("./assets/animations/boustrophedon.json")}
+              source={require("../assets/animations/boustrophedon.json")}
               //autoPlay
               loop={false}
               style={styles.algsSlideAnimation}
@@ -193,10 +190,7 @@ export default class SwiperComponent extends Component {
             </View>
             <Text style={styles.viewCardTitle}>Boustrophedon</Text>
             <Text style={styles.viewCardDesc}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat.
+            Questo approccio si serve di una struttura geometrica chiamata decomposizione cellulare esatta (dall'inglese "exact cellular decomposition") definita come l'unione di regioni non intersecanti che compongono l'ambiente circostante.
             </Text>
             <View style={styles.viewCardButtons}>
               {this.state.algRequested == 3 ? (
@@ -258,12 +252,12 @@ export default class SwiperComponent extends Component {
           {Platform.OS == "android" ? (
             <Image
               style={[styles.algsSlideImage]}
-              source={require("./assets/images/spiral.png")}
+              source={require("../assets/images/spiral.png")}
               resizeMode="cover"
             />
           ) : (
             <LottieView
-              source={require("./assets/animations/spiral.json")}
+              source={require("../assets/animations/spiral.json")}
               //autoPlay
               loop={false}
               style={styles.algsSlideAnimation}
@@ -287,10 +281,7 @@ export default class SwiperComponent extends Component {
               Spiral <Text style={styles.viewCardSubTitle}>(/w Wall-Follow)</Text>
             </Text>
             <Text style={styles.viewCardDesc}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat.
+            Un algoritmo a spirale combina l'uso di traiettorie a spirale e sterzate randomiche. Il criterio operativo si rifà agli algoritmi Random Walk con la sostanziale differenza che il robot inizia il processo dapprima seguendo un percorso a spirale.
             </Text>
             <View style={styles.viewCardButtons}>
               {this.state.algRequested == 4 ? (

@@ -344,14 +344,8 @@ export function HomeScreen({ navigation }) {
               setRTT(currentRTT);
             }
 
-<<<<<<< HEAD:Helper.js
             // reset pingMissCounter
             setPingMissCounter(0);
-=======
-            // debug
-            // alert(`current: ${currentRTT} | rtt: ${RTT}`);
-            
->>>>>>> da543824b3fd416a723cde112d6e4b9f2bb4e2bf:helpers/Helper.js
           })
           .catch(function (error) {
             // TODO: ricontrollare ->
@@ -748,7 +742,7 @@ function Separator() {
 function PostHeader() {
   return (
     <ImageBackground
-      source={require("./assets/postHeader.jpg")}
+      source={require("../assets/postHeader.jpg")}
       style={styles.postHeader}
       imageStyle={{ resizeMode: "stretch" }}
     ></ImageBackground>

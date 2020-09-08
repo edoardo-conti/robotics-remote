@@ -1942,24 +1942,27 @@ void loop() {
       ############################## FINE: Arduino Web Server ##############################
     */
 
-    // check periodico comunicazione con client
+    // check periodico comunicazione con client (watchdog)
     if (connection_req_auth != -1) {
       currentMillis_ping = millis();
       if ((currentMillis_ping - clientLastReqMillis_ping > interval_ping) && (clientLastReqMillis_ping != 0)) {
-        // stop
-        stopMotors();
+        // se il robot non è in modalità "pulizia"
+        if ( behaviour_selector < 2 ) {
+          // stop
+          stopMotors();
 
-        // Logging
-        Serial.println("[log] Comunicazione con il client persa, ripristino configurazione robot.");
-        // reset ambiente
-        setBehaviour(-1);
-        connection_req_auth = -1;
-        last_remote_direction = -1;
-        self_protection_enabled = !self_protection_enabled;
-        // reset timer
-        clientLastReqMillis_ping = 0;
+          // Logging
+          Serial.println("[log] Comunicazione con il client persa, ripristino configurazione robot.");
+          // reset ambiente
+          setBehaviour(-1);
+          connection_req_auth = -1;
+          last_remote_direction = -1;
+          self_protection_enabled = !self_protection_enabled;
+          // reset timer
+          clientLastReqMillis_ping = 0;
 
-        delay(100);
+          delay(100);
+        }
       }
     }
     /*

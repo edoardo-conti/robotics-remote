@@ -590,10 +590,10 @@ export function HomeScreen({ navigation }) {
                 onPress={gotoAlgs}
               >
                 <Text style={styles.tabViewButtonTitle}>
-                  Modalità Esplorazione
+                  Modalità di Pulizia
                 </Text>
                 <Text style={styles.tabViewButtonDesc}>
-                  Scopri gli algoritmi di massima copertura di un'area.
+                  Scegli la tecnica da utilizzare per avviare la pulizia della casa.
                 </Text>
               </TouchableOpacity>
               <View style={styles.tabViewAnimationContainer}>

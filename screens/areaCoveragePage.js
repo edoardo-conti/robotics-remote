@@ -152,7 +152,7 @@ export default class SwiperComponent extends Component {
                       styles.viewCardButtonTextStart,
                     ]}
                   >
-                    Avvia Navigazione Autonoma
+                    Avvia
                   </Text>
                 </TouchableOpacity>
               )}
@@ -240,7 +240,7 @@ export default class SwiperComponent extends Component {
                       styles.viewCardButtonTextStart,
                     ]}
                   >
-                    Avvia Navigazione Autonoma
+                    Avvia
                   </Text>
                 </TouchableOpacity>
               )}
@@ -331,7 +331,7 @@ export default class SwiperComponent extends Component {
                       styles.viewCardButtonTextStart,
                     ]}
                   >
-                    Avvia Navigazione Autonoma
+                    Avvia
                   </Text>
                 </TouchableOpacity>
               )}

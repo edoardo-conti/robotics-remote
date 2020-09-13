@@ -94,6 +94,7 @@ unsigned short distance_sl = 150;
    @bumper, pin switch con levetta frontale in caso di fallita rilevazione dei sensori
    [@m1_ph | @m1_en], pin "phase" ed "enable" del motore di destra
    [@m2_ph | @m2_en], pin "phase" ed "enable" del motore di destra
+   @green_led, pin LED verde principali posto su lato superiore robot
 */
 const short fan_mosfet = 6;
 const short bumper = 7;
@@ -101,6 +102,7 @@ const short m1_ph = 2;
 const short m1_en = 3;
 const short m2_ph = 4;
 const short m2_en = 5;
+const short green_led = 13;
 
 /*
    Velocità PWM per i micro metal motors
@@ -211,12 +213,14 @@ void setup() {
   /*
      Inizializzazione pin I/O
   */
+  // LED verde principale
+  pinMode(green_led, OUTPUT);
   // MOSFET ventola
   pinMode(fan_mosfet, OUTPUT);
-  // notore 1
+  // motore 1
   pinMode(m1_ph, OUTPUT);
   pinMode(m1_en, OUTPUT);
-  // notore 2
+  // motore 2
   pinMode(m2_ph, OUTPUT);
   pinMode(m2_en, OUTPUT);
   // bumper
@@ -307,6 +311,7 @@ void robotBegin() {
     is_battery_charged = true;
 
     //digitalWrite(fan_mosfet, HIGH);
+    digitalWrite(green_led, HIGH);
 
     // delay
     delay(2000);
@@ -940,6 +945,9 @@ void spiral() {
     // reset condizione se necessario
     if (spiralling == false) {
       spiralling = true;
+      // reset parametri
+      min_s_speed = 50;
+      tourtime = 1000;
     }
 
     // Serial.println("[spiral] ostacoli frontali.");
@@ -982,6 +990,9 @@ void spiral() {
         distance_sr >= bubbleBandBounds[1] &&
         distance_sl >= bubbleBandBounds[1]) {
       spiralling = true;
+      // reset parametri
+      min_s_speed = 50;
+      tourtime = 1000;
     }
   }
 }
@@ -1584,6 +1595,13 @@ void loop() {
           setMotorsSpeed(default_speed);
           // impostazione modalità
           setBehaviour(opmode);
+
+          // verifica attivazione ventola
+          if (opmode == 2 || opmode == 3 || opmode == 4) {
+            digitalWrite(fan_mosfet, HIGH);
+          } else {
+            digitalWrite(fan_mosfet, LOW);
+          }
 
           if (opmode == -1) {
             stopMotors();

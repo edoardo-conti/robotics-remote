@@ -10,6 +10,8 @@ Progetto open-source finalizzato alla realizzazione di un robot domestico stampa
 
 ## Architettura Robot e Scelte Implementative ##
 
+<img align="right" src="https://i.imgur.com/jFkoREL.jpg">
+
 Di seguito la componentistica principale dell'hardware del robot:
 
 - Il microcontrollore impiegato è un **Arduino UNO WiFi Rev2** che differisce dalla versione classica per il nuovo chip *ATmega4809* (il classico *Arduino UNO R3* è coadiuvato da microcontrollore *ATmega328*) e la dotazione di un modulo SoC con integrato uno stack *TCP/IP* completo il quale può offrire accesso ad una rete WiFi oppure agire come Access Point. 

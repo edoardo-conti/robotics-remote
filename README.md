@@ -1,4 +1,4 @@
-# 🎓 Progetto di Laurea  #
+# 🎓 Progetto di Laurea Triennale  #
 
 ## Introduzione ##
 

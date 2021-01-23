@@ -36,7 +36,7 @@
     "react-native-syntax-highlighter": "^2.1.0",
     "react-native-tiny-toast": "^1.0.7",
     "react-native-web": "~0.11.7",
-    "react-native-webview": "9.4.0",
+    "react-native-webview": "11.0.0",
     "react-navigation": "^4.4.0",
     "react-navigation-header-buttons": "^4.0.2",
     "url-search-params-polyfill": "^8.1.0",
